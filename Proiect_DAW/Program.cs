@@ -17,13 +17,7 @@ options.SignIn.RequireConfirmedAccount = true)
 .AddEntityFrameworkStores<ApplicationDbContext>(
 );
 
-builder.Services.AddControllersWithViews();
-
-builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
-options.SignIn.RequireConfirmedAccount = true)
-.AddRoles<IdentityRole>()
-.AddEntityFrameworkStores<ApplicationDbContext>(
-);
+builder.Services.AddControllersWithViews(); 
 
 var app = builder.Build();
 
@@ -58,4 +52,3 @@ app.MapControllerRoute(
 app.MapRazorPages();
 
 app.Run();
-
