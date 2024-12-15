@@ -9,5 +9,7 @@ namespace Proiect_DAW.Models
   
         [Required(ErrorMessage = "Numele este obligatoriu")]
         public string Name { get; set; }
+
+        public virtual ICollection<Product> Products { get; set; }
     }
 }

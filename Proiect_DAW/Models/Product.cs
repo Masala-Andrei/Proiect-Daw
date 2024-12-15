@@ -13,11 +13,11 @@ namespace Proiect_DAW.Models
         [Required(ErrorMessage = "Descrierea este obligatorie")]
         public string Description { get; set; }
 
-        [Required(ErrorMessage = "Poza este obligatorie")]
-        public IFormFile Photo { get; set; }
+        //[Required(ErrorMessage = "Poza este obligatorie")]
+        //public IFormFile Photo { get; set; }
 
         [Required(ErrorMessage = "Prețul este obligatoriu")]
-        [Range(1, 5, ErrorMessage = "Pretul trebuie sa fie mai mare de 0 RON")]
+        [Range(1, 5, ErrorMessage = "Prețul trebuie sa fie mai mare de 0 RON")]
         public int Price { get; set; }
 
         [Required(ErrorMessage = "Stocul este obligatoriu")]
@@ -30,9 +30,13 @@ namespace Proiect_DAW.Models
 
         [Required(ErrorMessage = "Categoria este obligatorie")]
         public int CategoryId { get; set; }
-        public int UserId { get; set; }
+        public virtual Category Category { get; set; }
 
         public virtual ICollection<Review> Reviews { get; set; }
-        public virtual Category Category { get; set; }
+
+        public virtual ICollection<ProductOrder> ProductOrders { get; set; }
+
+        public string? UserId { get; set; }
+        public virtual ApplicationUser? User { get; set; }
     }
 }
