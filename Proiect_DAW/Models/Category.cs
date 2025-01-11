@@ -8,7 +8,7 @@ namespace Proiect_DAW.Models
         public int Id { get; set; }
   
         [Required(ErrorMessage = "Numele este obligatoriu")]
-        public string Name { get; set; }
+        public string CategoryName { get; set; }
 
         public virtual ICollection<Product> Products { get; set; }
     }

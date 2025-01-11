@@ -4,12 +4,12 @@ namespace Proiect_DAW.Models
 {
     public class ApplicationUser : IdentityUser
     {
-        public string UserName { get; set; }
+        public string? FirstName { get; set; }
 
-        public virtual ICollection<Product> Products { get; set; }
+        public virtual ICollection<Product>? Products { get; set; }
 
-        public virtual ICollection<Order> Orders { get; set; }
+        public virtual ICollection<Order>? Orders { get; set; }
 
-        public virtual ICollection<Review> Reviews { get; set; }
+        public virtual ICollection<Review>? Reviews { get; set; }
     }
 }

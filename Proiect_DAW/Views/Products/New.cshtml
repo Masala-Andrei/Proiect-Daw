@@ -1,0 +1,60 @@
+﻿@model Proiect_DAW.Models.Product
+
+
+@{
+    ViewData["Title"] = "Adaugă Produs";
+}
+
+<h2>Adaugă Produs</h2>
+<div asp-validation-summary="All" class="text-danger"></div>
+<div class="container">
+    <form asp-action="New" asp-controller="Products" method="post">
+        <div class="form-group">
+            <label asp-for="Title" class="form-label">Titlu</label>
+            <input asp-for="Title" class="form-control" />
+            <span asp-validation-for="Title" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Description" class="form-label">Descriere</label>
+            <textarea asp-for="Description" class="form-control" rows="5"></textarea>
+            <span asp-validation-for="Description" class="text-danger"></span>
+        </div>
+
+        <!--<div class="form-group">
+            <label asp-for="Photo" class="form-label">Poza</label>
+            <input asp-for="Photo" class="form-control" type="file" />
+            <span asp-validation-for="Photo" class="text-danger"></span>
+        </div>-->
+
+        <div class="form-group">
+            <label asp-for="Price" class="form-label">Preț (RON)</label>
+            <input asp-for="Price" type="number" class="form-control" />
+            <span asp-validation-for="Price" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Stock" class="form-label">Stoc</label>
+            <input asp-for="Stock" type="number" class="form-control" />
+            <span asp-validation-for="Stock" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="CategoryId" class="form-label">Categorie</label>
+            <select asp-for="CategoryId" asp-items="Model.Categ" class="form-control">
+                <option value="">Selectează o categorie</option>
+            </select>
+            <span asp-validation-for="CategoryId" class="text-danger"></span>
+        </div>
+
+        <button type="submit" class="btn btn-primary mt-3">Adaugă Produs</button>
+        <a asp-action="Index" class="btn btn-secondary mt-3">Anulează</a>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+
+
+
