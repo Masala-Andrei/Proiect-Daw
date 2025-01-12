@@ -5,23 +5,17 @@
     ViewBag.Title = "Editare categorie";
 }
 
-<h2>@ViewBag.Title</h2>
-
+<h2 class="text-center" style="color: #FF7043;">@ViewBag.Title</h2>
 
 <form asp-action="Edit" asp-controller="Categories" asp-route-id="@Model.Id" method="post">
-
-    <div class="form-group">
-        <label asp-for="CategoryName" class="form-label">Denumire categorie</label>
+    <div class="form-group" style="background-color: #FFF3E0; border: 1px solid #FFB74D; padding: 15px; border-radius: 8px;">
+        <label asp-for="CategoryName" class="form-label" style="color: #FF7043;">Denumire categorie</label>
         <br />
-        <input asp-for="CategoryName" class="form-control" />
+        <input asp-for="CategoryName" class="form-control" style="background-color: #FFE0B2; border: 1px solid #FFB74D; color: #FF7043;" />
         <span asp-validation-for="CategoryName" class="text-danger"></span>
     </div>
 
     <br />
 
-    <button class="btn btn-success" type="submit">Modifică categoria</button>
-
+    <button class="btn" style="background-color: #FF7043; color: white;" type="submit">Modifică categoria</button>
 </form>
-
-
-

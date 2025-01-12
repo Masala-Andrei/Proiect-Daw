@@ -1,53 +1,64 @@
 ﻿@model Proiect_DAW.Models.Product
 
-<h2 class="text-center mt-5">Editare articol</h2>
+<h2 class="text-center mt-5 text-warning">Editare produs</h2>
 
 <br />
 
 <div class="container mt-5">
-    <div class="row">
-        <div class="col-md-6 offset-3">
-
-            <form method="post" asp-action="Edit" asp-controller="Products" asp-route-id="@Model.Id">
-
-                <div asp-validation-summary="All" class="text-danger"></div>
-
-                <div class="form-group">
-                    <label asp-for="Title" class="form-label">Titlu Produs</label>
-                    <br />
-                    <input asp-for="Title" class="form-control" />
-
-                    <span asp-validation-for="Title" class="text-danger"></span>
-
-                    <br /><br />
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-warning text-white text-center">
+                    <h5>Editați informațiile produsului</h5>
                 </div>
+                <div class="card-body bg-light">
+                    <form method="post" asp-action="Edit" asp-controller="Products" asp-route-id="@Model.Id">
+                        <div asp-validation-summary="All" class="text-danger mb-3"></div>
 
-                <div class="form-group">
-                    <label asp-for="Description" class="form-label">Continut Produs</label>
-                    <br />
-                    <textarea asp-for="Description" class="form-control summernote"></textarea>
+                        <!-- Titlu Produs -->
+                        <div class="form-group mb-4">
+                            <label asp-for="Title" class="form-label text-warning">Titlu Produs</label>
+                            <input asp-for="Title" class="form-control border-warning" />
+                            <span asp-validation-for="Title" class="text-danger"></span>
+                        </div>
 
-                    <span asp-validation-for="Description" class="text-danger"></span>
+                        <!-- Descriere Produs -->
+                        <div class="form-group mb-4">
+                            <label asp-for="Description" class="form-label text-warning">Conținut Produs</label>
+                            <textarea asp-for="Description" class="form-control border-warning summernote"></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
 
-                    <br /><br />
+                        <!-- Pret Produs -->
+                        <div class="form-group mb-4">
+                            <label asp-for="Price" class="form-label text-warning">Pret Produs</label>
+                            <textarea asp-for="Price" class="form-control border-warning summernote"></textarea>
+                            <span asp-validation-for="Price" class="text-danger"></span>
+                        </div>
+
+                        <!-- Selectare Categorie -->
+                        <div class="form-group mb-4">
+                            <label for="CategoryId" class="form-label text-warning">Selectați Categoria</label>
+                            <select asp-for="CategoryId" asp-items="Model.Categ" class="form-control border-warning">
+                                <option value="">Selectați categoria</option>
+                            </select>
+                            <span asp-validation-for="CategoryId" class="text-danger"></span>
+                        </div>
+
+                        <!-- Stoc Produs -->
+                        <div class="form-group mb-4">
+                            <label asp-for="Stock" class="form-label text-warning">Stoc Produs</label>
+                            <textarea asp-for="Stock" class="form-control border-warning summernote"></textarea>
+                            <span asp-validation-for="Stock" class="text-danger"></span>
+                        </div>
+
+                        <!-- Buton Submit -->
+                        <div class="text-center">
+                            <button class="btn btn-warning text-white" type="submit">Modifica produs</button>
+                        </div>
+                    </form>
                 </div>
-
-                <div class="form-group">
-                    <label for="CategoryId">Selectati categoria</label>
-                    <br />
-                    <select asp-for="CategoryId" asp-items="Model.Categ" class="form-control">
-                        <option value="">Selectati categoria</option>
-                    </select>
-
-                    <span asp-validation-for="CategoryId" class="text-danger"></span>
-
-                    <br />
-                </div>
-
-                <button class="btn btn-sm btn-success" type="submit">Modifica produs</button>
-
-            </form>
+            </div>
         </div>
     </div>
 </div>
-

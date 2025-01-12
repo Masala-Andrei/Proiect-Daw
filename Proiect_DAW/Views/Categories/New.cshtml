@@ -1,24 +1,21 @@
 ﻿@model Proiect_DAW.Models.Category
 
-
 @{
     ViewBag.Title = "Adaugare Categorie";
 }
 
+<h2 class="text-center" style="color: #FF7043;">@ViewBag.Title</h2>
 
-<h2>Adaugare Categorie</h2>
-
+<!-- Formular pentru Adăugarea unei Categorie -->
 <form asp-action="New" asp-controller="Categories" method="post">
 
     <div class="form-group">
-        <label asp-for="CategoryName" class="form-label">Denumire categorie</label>
+        <label asp-for="CategoryName" class="form-label" style="color: #FF7043;">Denumire categorie</label>
         <br />
-        <input asp-for="CategoryName" class="form-control" />
+        <input asp-for="CategoryName" class="form-control" style="background-color: #FFF3E0; border: 1px solid #FFB74D; color: #FF7043;" />
         <span asp-validation-for="CategoryName" class="text-danger"></span>
     </div>
 
     <br /><br />
-    <button class="btn btn-success" type="submit">Adauga categorie</button>
+    <button class="btn" style="background-color: #FF7043; color: white;" type="submit">Adaugă categorie</button>
 </form>
-
-

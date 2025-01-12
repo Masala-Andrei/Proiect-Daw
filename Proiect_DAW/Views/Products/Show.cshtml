@@ -7,7 +7,9 @@
         <div class="card-body text-warning" style="color: #FF7043;">
             <h5 class="mb-3"><strong>@Model.Title</strong></h5>
             <p><strong>Descriere:</strong> @Model.Description</p>
-            <p><strong>Categorie:</strong> @Model.Category?.CategoryName</p>
+            <p><strong>Categorie:</strong> @Model.Category.CategoryName</p> <!-- Modificat pentru a arăta categoria corectă -->
+
+
             <p><strong>Preț:</strong> @Model.Price RON</p>
             <p>
                 <strong>Rating :</strong>
@@ -21,6 +23,19 @@
                 }
             </p>
         </div>
+
+        <!-- Formular pentru Adăugarea în Coș -->
+        <div class="card-footer text-end" style="background-color: #FFE0B2;">
+            <form method="post" asp-action="AddToCart" asp-controller="Products">
+                <input type="hidden" name="productId" value="@Model.Id" />
+                <div class="form-group d-inline-block me-2">
+                    <label for="quantity" class="form-label">Cantitate:</label>
+                    <input type="number" id="quantity" name="quantity" class="form-control d-inline-block" min="1" max="@Model.Stock" value="1" required style="width: 80px;" />
+                </div>
+                <button class="btn btn-success" type="submit">Adaugă în Coș</button>
+            </form>
+        </div>
+
         @if ((ViewBag.AfisareButoane == true && Model.UserId == ViewBag.UserCurent)
         || ViewBag.EsteAdmin == true)
         {

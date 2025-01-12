@@ -1,60 +1,58 @@
 ﻿@model Proiect_DAW.Models.Product
 
-
 @{
     ViewData["Title"] = "Adaugă Produs";
 }
 
-<h2>Adaugă Produs</h2>
+<h2 class="text-center" style="color: #FF7043;">Adaugă Produs</h2>
 <div asp-validation-summary="All" class="text-danger"></div>
-<div class="container">
+<div class="container my-5">
     <form asp-action="New" asp-controller="Products" method="post">
-        <div class="form-group">
-            <label asp-for="Title" class="form-label">Titlu</label>
-            <input asp-for="Title" class="form-control" />
+        <div class="form-group mb-4">
+            <label asp-for="Title" class="form-label" style="color: #FF7043;">Titlu</label>
+            <input asp-for="Title" class="form-control" style="background-color: #FFF3E0; border: 1px solid #FFB74D;" />
             <span asp-validation-for="Title" class="text-danger"></span>
         </div>
 
-        <div class="form-group">
-            <label asp-for="Description" class="form-label">Descriere</label>
-            <textarea asp-for="Description" class="form-control" rows="5"></textarea>
+        <div class="form-group mb-4">
+            <label asp-for="Description" class="form-label" style="color: #FF7043;">Descriere</label>
+            <textarea asp-for="Description" class="form-control" rows="5" style="background-color: #FFF3E0; border: 1px solid #FFB74D;"></textarea>
             <span asp-validation-for="Description" class="text-danger"></span>
         </div>
 
-        <!--<div class="form-group">
-            <label asp-for="Photo" class="form-label">Poza</label>
+        <!--<div class="form-group mb-4">
+            <label asp-for="Photo" class="form-label" style="color: #FF7043;">Poza</label>
             <input asp-for="Photo" class="form-control" type="file" />
             <span asp-validation-for="Photo" class="text-danger"></span>
         </div>-->
 
-        <div class="form-group">
-            <label asp-for="Price" class="form-label">Preț (RON)</label>
-            <input asp-for="Price" type="number" class="form-control" />
+        <div class="form-group mb-4">
+            <label asp-for="Price" class="form-label" style="color: #FF7043;">Preț (RON)</label>
+            <input asp-for="Price" type="number" class="form-control" style="background-color: #FFF3E0; border: 1px solid #FFB74D;" />
             <span asp-validation-for="Price" class="text-danger"></span>
         </div>
 
-        <div class="form-group">
-            <label asp-for="Stock" class="form-label">Stoc</label>
-            <input asp-for="Stock" type="number" class="form-control" />
+        <div class="form-group mb-4">
+            <label asp-for="Stock" class="form-label" style="color: #FF7043;">Stoc</label>
+            <input asp-for="Stock" type="number" class="form-control" style="background-color: #FFF3E0; border: 1px solid #FFB74D;" />
             <span asp-validation-for="Stock" class="text-danger"></span>
         </div>
 
-        <div class="form-group">
-            <label asp-for="CategoryId" class="form-label">Categorie</label>
-            <select asp-for="CategoryId" asp-items="Model.Categ" class="form-control">
+        <div class="form-group mb-4">
+            <label asp-for="CategoryId" class="form-label" style="color: #FF7043;">Categorie</label>
+            <select asp-for="CategoryId" asp-items="Model.Categ" class="form-control" style="background-color: #FFF3E0; border: 1px solid #FFB74D;">
                 <option value="">Selectează o categorie</option>
             </select>
             <span asp-validation-for="CategoryId" class="text-danger"></span>
         </div>
 
-        <button type="submit" class="btn btn-primary mt-3">Adaugă Produs</button>
-        <a asp-action="Index" class="btn btn-secondary mt-3">Anulează</a>
+        <div class="d-flex justify-content-between">
+            <button type="submit" class="btn" style="background-color: #FF7043; color: white;">Adaugă Produs</button>
+            <a asp-action="Index" class="btn btn-secondary">Anulează</a>
+        </div>
     </form>
 </div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 }
-
-
-
