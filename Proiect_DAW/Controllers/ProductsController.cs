@@ -28,7 +28,7 @@ namespace Proiect_DAW.Controllers
             _roleManager = roleManager;
         }
 
-        [Authorize(Roles = "Editor,Admin")]
+        [Authorize(Roles = "Colaborator,Admin")]
         public IActionResult New()
         {
             Product product = new Product();
@@ -42,7 +42,7 @@ namespace Proiect_DAW.Controllers
 
         // Se adauga articolul in baza de date
         // Doar utilizatorii cu rolul Editor si Admin pot adauga articole in platforma
-        [Authorize(Roles = "Editor,Admin")]
+        [Authorize(Roles = "Colaborator,Admin")]
         [HttpPost]
 
         public IActionResult New(Product product)
@@ -125,7 +125,7 @@ namespace Proiect_DAW.Controllers
         {
             ViewBag.AfisareButoane = false;
 
-            if (User.IsInRole("Editor"))
+            if (User.IsInRole("Colaborator"))
             {
                 ViewBag.AfisareButoane = true;
             }
@@ -141,11 +141,21 @@ namespace Proiect_DAW.Controllers
                                          .Include("Reviews")
                                          .Include("User")
                                          .Include("Reviews.User")
-                              .Where(prod => prod.Id == id)
-                              .First();
+                                         .Include("UserRatings")
+                                          .Where(prod => prod.Id == id)
+                                          .First();
 
 
 
+
+
+            double averageRating = product.UserRatings != null && product.UserRatings.Count > 0
+            ? product.UserRatings
+            .Where(ur => ur.Number >= 1 && ur.Number <= 5) // Filtrează doar ratingurile valide
+            .Average(ur => ur.Number) ?? 0.0 // Media ratingurilor valide sau 0.0
+            : 0.0;
+
+            product.Rating = averageRating;
 
 
             if (TempData.ContainsKey("message"))
@@ -158,7 +168,7 @@ namespace Proiect_DAW.Controllers
         }
 
 
-        [Authorize(Roles = "Editor,Admin")]
+        [Authorize(Roles = "Colaborator,Admin")]
         public IActionResult Edit(int id)
         {
 
@@ -183,30 +193,39 @@ namespace Proiect_DAW.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Editor,Admin")]
+        [Authorize(Roles = "Colaborator,Admin")]
         public IActionResult Edit(int id, Product requestProduct)
         {
-
             Product product = db.Products.Find(id);
 
             if (ModelState.IsValid)
             {
-                if ((product.UserId == _userManager.GetUserId(User))
-                    || User.IsInRole("Admin"))
+                if ((product.UserId == _userManager.GetUserId(User)) || User.IsInRole("Admin"))
                 {
                     product.Title = requestProduct.Title;
-
                     product.Description = requestProduct.Description;
-
                     product.CategoryId = requestProduct.CategoryId;
-                    TempData["message"] = "Articolul a fost modificat";
+                    product.Price = requestProduct.Price;
+                    product.Stock = requestProduct.Stock;
+
+                    if (User.IsInRole("Admin"))
+                    {
+                        product.Validated = requestProduct.Validated;
+                    }
+                    else
+                    {
+                        product.Validated = false;
+                    }
+
+                    TempData["message"] = "Produsul a fost modificat cu succes.";
                     TempData["messageType"] = "alert-success";
                     db.SaveChanges();
+
                     return RedirectToAction("Index");
                 }
                 else
                 {
-                    TempData["message"] = "Nu aveti dreptul sa faceti modificari asupra unui articol care nu va apartine";
+                    TempData["message"] = "Nu aveți dreptul să faceți modificări asupra unui produs care nu vă aparține.";
                     TempData["messageType"] = "alert-danger";
                     return RedirectToAction("Index");
                 }
@@ -268,32 +287,74 @@ namespace Proiect_DAW.Controllers
             return View(prod);
         }
 
+
+
         [HttpPost]
-        [Authorize(Roles = "Editor,Admin")]
+        [Authorize(Roles = "Colaborator,Admin")]
         public ActionResult Delete(int id)
         {
-            // Article article = db.Articles.Find(id);
-
             Product product = db.Products.Include("Reviews")
                                          .Where(prod => prod.Id == id)
-                                         .First();
+                                         .FirstOrDefault();
 
-            if ((product.UserId == _userManager.GetUserId(User))
-                    || User.IsInRole("Admin"))
+            if (product == null)
+            {
+                TempData["message"] = "Produsul nu a fost găsit.";
+                TempData["messageType"] = "alert-danger";
+                return RedirectToAction("Index");
+            }
+
+            if ((product.UserId == _userManager.GetUserId(User)) || User.IsInRole("Admin"))
             {
                 db.Products.Remove(product);
                 db.SaveChanges();
-                TempData["message"] = "Articolul a fost sters";
+
+                TempData["message"] = "Produsul a fost șters cu succes.";
                 TempData["messageType"] = "alert-success";
                 return RedirectToAction("Index");
             }
             else
             {
-                TempData["message"] = "Nu aveti dreptul sa stergeti un articol care nu va apartine";
+                TempData["message"] = "Nu aveți dreptul să ștergeți acest produs.";
                 TempData["messageType"] = "alert-danger";
                 return RedirectToAction("Index");
             }
         }
+
+
+        [Authorize(Roles = "Admin")]
+        public IActionResult ValidateProducts()
+        {
+            var unvalidatedProducts = db.Products
+                                        .Where(p => !p.Validated)
+                                        .Include(p => p.Category)
+                                        .ToList();
+
+            return View(unvalidatedProducts);
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        public IActionResult ValidateProducts(int id)
+        {
+            var product = db.Products.Find(id);
+
+            if (product == null)
+            {
+                TempData["message"] = "Produsul nu a fost găsit.";
+                TempData["messageType"] = "alert-danger";
+                return RedirectToAction("ValidateProducts");
+            }
+
+            product.Validated = true;
+            db.SaveChanges();
+
+            TempData["message"] = "Produsul a fost validat cu succes.";
+            TempData["messageType"] = "alert-success";
+
+            return RedirectToAction("ValidateProducts");
+        }
+
 
         [NonAction]
         public IEnumerable<SelectListItem> GetAllCategories()

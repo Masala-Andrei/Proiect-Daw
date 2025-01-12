@@ -26,7 +26,10 @@ namespace Proiect_DAW.Models
         public int Stock { get; set; }
 
         //[Range(1, 5, ErrorMessage = "Rating-ul trebuie să fie între 1 și 5.")]
-        public int? Rating { get; set; }
+        [NotMapped]
+        public double? Rating { get; set; }
+
+        public bool Validated { get; set; }
 
 
 
@@ -37,6 +40,8 @@ namespace Proiect_DAW.Models
         public virtual ICollection<Review>? Reviews { get; set; }
 
         public virtual ICollection<ProductOrder>? ProductOrders { get; set; }
+        public virtual ICollection<UserRating>? UserRatings { get; set; }
+
 
         public string? UserId { get; set; }
         public virtual ApplicationUser? User { get; set; }

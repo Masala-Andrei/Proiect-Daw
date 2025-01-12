@@ -11,5 +11,7 @@ namespace Proiect_DAW.Models
         public virtual ICollection<Order>? Orders { get; set; }
 
         public virtual ICollection<Review>? Reviews { get; set; }
+
+        public virtual ICollection<UserRating>? UserRatings { get; set; }
     }
 }

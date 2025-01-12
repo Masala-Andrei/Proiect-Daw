@@ -38,16 +38,20 @@
                             </li>
                         }
 
-                        @if (User.IsInRole("Editor"))
+                        @if (User.IsInRole("Colaborator"))
                         {
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Products" asp-action="Index">Afisare articole</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Products" asp-action="New">Adaugare articol</a>
+
+                              
+
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Products" asp-action="New">Adaugare produs</a>
+
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Bookmarks" asp-action="Index">Colectii</a>
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Categories" asp-action="Index">Afisare categorii</a>
                             </li>
                         }
 

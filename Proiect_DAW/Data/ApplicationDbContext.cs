@@ -17,6 +17,8 @@ namespace Proiect_DAW.Data
         public DbSet<ProductOrder> ProductOrders { get; set; }
         public DbSet<Review> Reviews { get; set; }
 
+        public DbSet<UserRating> UserRatings { get; set; }
+
         protected override void OnModelCreating(ModelBuilder
         modelBuilder)
         {
@@ -69,6 +71,22 @@ namespace Proiect_DAW.Data
             .WithMany(c => c.Orders)
             .HasForeignKey(a => a.UserId)
             .OnDelete(DeleteBehavior.Restrict); // Restricționează ștergerea;
+
+            // Define for UserChannel
+            modelBuilder.Entity<UserRating>()
+                .HasKey(uc => new { uc.Id, uc.UserId, uc.ProductId});
+
+            modelBuilder.Entity<UserRating>()
+                .HasOne(uc => uc.User)
+                .WithMany(user => user.UserRatings)
+                .HasForeignKey(uc => uc.UserId);
+
+            modelBuilder.Entity<UserRating>()
+                .HasOne(uc => uc.Product)
+                .WithMany(channel => channel.UserRatings)
+                .HasForeignKey(uc => uc.ProductId);
+
+
         }
     }
 }
