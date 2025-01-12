@@ -2,30 +2,31 @@
     ViewBag.Title = "Lista categorii";
 }
 
-<h2>@ViewBag.Title</h2>
+<h2 class="text-center" style="color: #FF7043;">@ViewBag.Title</h2>
 <br />
 
 @if (TempData.ContainsKey("message"))
 {
-    <h1>@ViewBag.message</h1>
+    <div class="alert p-3 rounded-3 text-center mb-5" style="background-color: #FFB74D; color: #FF7043;">
+        <h1>@ViewBag.message</h1>
+    </div>
 }
 
 <br />
 
 @foreach (Proiect_DAW.Models.Category category in ViewBag.Categories)
 {
-    <div class="form-group">
-        <label asp-for="@category.CategoryName" class="form-label">Denumire categorie</label>
-        <div><i class="bi bi-globe"></i> @category.CategoryName</div>
+    <div class="form-group" style="background-color: #FFF3E0; border: 1px solid #FFB74D; padding: 15px; border-radius: 8px;">
+        <label asp-for="@category.CategoryName" class="form-label" style="color: #BA3B14;">Denumire categorie</label>
+        <div style="color: #FF7043;"><i class="bi bi-globe"></i> @category.CategoryName</div>
     </div>
     <br />
-    <a class="btn alert-success" asp-controller="Categories" asp-action="Show" asp-route-id="@category.Id">Afisare categorie</a>
-    <a class="btn alert-success" asp-controller="Categories" asp-action="Edit" asp-route-id="@category.Id">Editare categorie</a>
+    <a class="btn" asp-controller="Categories" asp-action="Show" asp-route-id="@category.Id" style="background-color: #FF7043; color: white;">Afisare categorie</a>
+    <a class="btn" asp-controller="Categories" asp-action="Edit" asp-route-id="@category.Id" style="background-color: #FF7043; color: white;">Editare categorie</a>
     <br />
     <br />
-
 }
-<br />
-<a class="btn btn-success" asp-controller="Categories" asp-action="New">Adauga o noua categorie</a>
-<br />
 
+<br />
+<a class="btn" asp-controller="Categories" asp-action="New" style="background-color: #FF7043; color: white;">Adauga o noua categorie</a>
+<br />

@@ -164,6 +164,8 @@ namespace Proiect_DAW.Controllers
                 ViewBag.Alert = TempData["messageType"];
             }
 
+            SetAccessRights();
+
             return View(product);
         }
 
@@ -236,6 +238,70 @@ namespace Proiect_DAW.Controllers
                 return View(requestProduct);
             }
         }
+
+        // Metoda pentru a adăuga produsul în coș
+        [HttpPost]
+        [Authorize(Roles = "User,Editor,Admin")]
+        public IActionResult AddToCart(int productId, int quantity)
+        {
+            var product = db.Products.Include(p => p.Category).FirstOrDefault(p => p.Id == productId);
+
+            if (product == null || quantity <= 0)
+            {
+                TempData["message"] = "Produsul sau cantitatea nu este validă.";
+                TempData["messageType"] = "alert-danger";
+                return RedirectToAction("Show", new { id = productId });
+            }
+
+            // Dacă produsul există și cantitatea este validă, adăugăm în coș
+            var userId = _userManager.GetUserId(User);
+
+            var order = db.Orders.FirstOrDefault(c => c.Status != "Plasata" && c.UserId == userId);
+
+            if (order == null)
+            {
+                // Create a new order if it doesn't exist
+                order = new Order
+                {
+                    UserId = userId,
+                    Status = "Neplasata",
+                    Date = DateTime.Now
+                };
+                db.Orders.Add(order);  // Add the new order to the context
+                db.SaveChanges();  // Save the order first, so that it gets an ID
+            }
+
+            // At this point, the order is guaranteed to have an ID
+            var cartItem = db.ProductOrders.FirstOrDefault(c => c.ProductId == productId && c.Order.Status != "Plasata" && c.Order.UserId == userId);
+
+            if (cartItem != null)
+            {
+                // If the product is already in the cart, update the quantity
+                cartItem.Quantity += quantity;
+                cartItem.Price = cartItem.Quantity * cartItem.Product.Price;  // Update the price based on the new quantity
+            }
+            else
+            {
+                // If the product is not in the cart, add it
+                db.ProductOrders.Add(new ProductOrder
+                {
+                    ProductId = productId,
+                    Price = quantity * product.Price,
+                    Quantity = quantity,
+                    OrderId = order.Id  // Assign the OrderId after saving the Order
+                });
+            }
+
+            db.SaveChanges();
+
+
+
+            TempData["message"] = "Produsul a fost adăugat în coș!";
+            TempData["messageType"] = "alert-success";
+
+            return RedirectToAction("Index"); // Poți modifica ruta pentru a duce către coșul de cumpărături
+        }
+
 
         [HttpPost]
         [Authorize(Roles = "User,Editor,Admin")]

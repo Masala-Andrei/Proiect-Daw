@@ -1,0 +1,42 @@
+﻿@model List<Proiect_DAW.Models.ProductOrder>
+
+<div class="container my-5">
+    <h2>Coșul meu</h2>
+
+    @if (Model.Count > 0)
+    {
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Produs</th>
+                    <th>Cantitate</th>
+                    <th>Preț</th>
+                    <th>Acțiuni</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.Product.Title</td>
+                        <td>@item.Quantity</td>
+                        <td>@(item.Product.Price * item.Quantity) RON</td>
+                        <td>
+                            <form method="post" asp-action="RemoveFromCart" asp-route-cartItemId="@item.Id">
+                                <button class="btn btn-danger" type="submit">Șterge</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <form method="post" asp-action="PlaceOrder">
+            <button class="btn btn-success" type="submit">Plasează Comanda</button>
+        </form>
+    }
+    else
+    {
+        <p>Coșul tău este gol.</p>
+    }
+</div>

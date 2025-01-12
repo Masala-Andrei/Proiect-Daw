@@ -1,34 +1,42 @@
 ﻿<br />
-<h2 class="text-center">Afisare produse</h2>
-
+<h2 class="text-center" style="color: #FF7043;">Afisare produse</h2>
 <br />
 
 @if (ViewBag.Message != null)
 {
-    <div class="alert-success p-3 rounded-3 text-center mb-5 @ViewBag.Alert">
+    <div class="alert p-3 rounded-3 text-center mb-5 @ViewBag.Alert" style="background-color: #FFB74D; color: #FF7043;">
         @ViewBag.Message
     </div>
 }
 
 @* Motorul de cautare *@
 <form method="GET">
-    <div class="input-group mb-3">
+    <div class="input-group mb-3" style="max-width: 600px; margin: 0 auto;">
         <input type="text" class="form-control" placeholder="Search topics or keywords" name="search"
-               value="@ViewBag.SearchString">
-        <button class="btn btn-outline-success" type="submit">Search</button>
+               value="@ViewBag.SearchString" style="background-color: #FFF3E0; border: 1px solid #FFB74D; color: #FF7043;">
+        <button class="btn" style="background-color: #FF7043; color: white;" type="submit">Search</button>
     </div>
 </form>
 
-@foreach (var product in ViewBag.Products)
-{
-    <div class="card">
+<div class="container my-5">
+    @foreach (var product in ViewBag.Products)
+    {
+        <div class="card mb-4 shadow" style="background-color: #FFF3E0; border: 1px solid #FFB74D;">
+            <div class="card-header" style="background-color: #FFB74D; color: white;">
+                <h5 style="color: #FFFFFF;">@product.Title</h5>
+            </div>
+            <div class="card-body" style="color: #FF7043;">
+                <p><strong>Descriere:</strong> @product.Description</p>
+                <p><strong>Categorie:</strong> @product.Category.CategoryName</p>
+                <p><strong>Preț:</strong> @product.Price RON</p>
+            </div>
+            <div class="card-footer text-center" style="background-color: #FFE0B2;">
+                <a class="btn" href="@Url.Action("Show", "Products", new { id = product.Id })"
+                   style="background-color: #FF7043; color: white;">Afisare produs</a>
+            </div>
+        </div>
+    }
+</div>
 
-        <partial name="ProductInfo" model="product"></partial>
-
-        <a class="btn btn-success" asp-controller="Products" asp-action="Show" asp-route-id="@product.Id">Afisare produs</a>
-
-    </div>
-
-    <br />
-    <br />
-}
+<br />
+<br />
