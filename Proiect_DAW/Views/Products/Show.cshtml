@@ -7,8 +7,19 @@
         <div class="card-body text-warning" style="color: #FF7043;">
             <h5 class="mb-3"><strong>@Model.Title</strong></h5>
             <p><strong>Descriere:</strong> @Model.Description</p>
-            <p><strong>Categorie:</strong> Accesorii</p>
+            <p><strong>Categorie:</strong> @Model.Category?.CategoryName</p>
             <p><strong>Preț:</strong> @Model.Price RON</p>
+            <p>
+                <strong>Rating :</strong>
+                @if (Model.Rating > 0)
+                {
+                    <span class="text-success">@Model.Rating.ToString("0.0") / 5</span>
+                }
+                else
+                {
+                    <span class="text-muted">Niciun rating</span>
+                }
+            </p>
         </div>
         @if ((ViewBag.AfisareButoane == true && Model.UserId == ViewBag.UserCurent)
         || ViewBag.EsteAdmin == true)
@@ -21,6 +32,28 @@
             </div>
         }
     </div>
+
+    <!-- Card Rating --> 
+     <div class="card shadow" style="background-color: #F3E5F5;"> 
+        <div class="card-header text-white" style="background-color: #8E24AA;"> 
+            <h5>Adaugă sau Vizualizează Rating-uri</h5> 
+        </div> 
+         <div class="card-body"> 
+            <h6 class="mb-3">Adaugă un rating:</h6> 
+           <form asp-action="AddRating" asp-controller="Products" method="post"> 
+                <input type="hidden" name="ProductId" value="@Model.Id" /> 
+                <div class="mb-3"> 
+                   <label for="RatingInput" class="form-label">Rating (1-5):</label> 
+                     <input type="number" id="RatingInput" name="Number" class="form-control" min="1" max="5" required /> 
+                </div> 
+                <button type="submit" class="btn btn-primary">Trimite Rating</button> 
+           </form> 
+
+             <hr /> 
+         </div> 
+     </div> 
+ </div>
+
 
     <!-- Listă Recenzii -->
     <h4 class="mt-4 text-warning" style="color: #FF7043;">Recenzii</h4>
@@ -49,6 +82,7 @@
     <!-- Formular Adăugare Review -->
     <div class="card mt-4 shadow" style="background-color: #FFF3E0;">
         <div class="card-header text-white" style="background-color: #FFB74D;">
+
             <h5>Adaugă un review</h5>
         </div>
         <div class="card-body text-warning" style="color: #FF7043;">

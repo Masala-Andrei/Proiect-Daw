@@ -1,0 +1,37 @@
+﻿@model Proiect_DAW.Models.Review
+@{
+    ViewData["Title"] = "Editează Review-ul";
+}
+
+<div class="container my-5">
+    <h2>Editează Review-ul</h2>
+    @if (TempData["message"] != null)
+    {
+        <div class="alert @TempData["messageType"]">
+            @TempData["message"]
+        </div>
+    }
+
+    <form method="post" asp-action="Edit" asp-route-id="@Model.Id">
+        <div class="mb-3">
+            <label for="Content" class="form-label">Comentariu</label>
+            <textarea id="Content" name="Content" class="form-control" rows="4" required>@Model.Content</textarea>
+        </div>
+
+        <input type="hidden" name="ProductId" value="@Model.ProductId" />
+
+        <button type="submit" class="btn btn-primary">Actualizează Review-ul</button>
+    </form>
+
+    @if (ViewBag.Errors != null)
+    {
+        <div class="alert alert-danger mt-3">
+            <ul>
+                @foreach (var error in ViewBag.Errors)
+                {
+                    <li>@error</li>
+                }
+            </ul>
+        </div>
+    }
+</div>

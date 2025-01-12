@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Proiect_DAW.Controllers
 {
-    [Authorize]
+    //[Authorize]
 
     public class ProductsController : Controller
     {
@@ -163,7 +163,7 @@ namespace Proiect_DAW.Controllers
                 ViewBag.Message = TempData["message"];
                 ViewBag.Alert = TempData["messageType"];
             }
-
+            SetAccessRights();
             return View(product);
         }
 
@@ -319,6 +319,60 @@ namespace Proiect_DAW.Controllers
                 TempData["messageType"] = "alert-danger";
                 return RedirectToAction("Index");
             }
+        }
+
+        [HttpGet]
+        [Authorize] // Doar utilizatorii autentificați pot adăuga rating-uri
+        public IActionResult AddRating(int productId)
+        {
+            var product = db.Products.FirstOrDefault(p => p.Id == productId && p.Validated);
+            if (product == null)
+            {
+                TempData["message"] = "Produsul nu a fost găsit.";
+                TempData["messageType"] = "alert-danger";
+                return RedirectToAction("Index");
+            }
+
+            ViewBag.ProductTitle = product.Title;
+            return View(new UserRating { ProductId = productId });
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "Admin,Colaborator,RegisteredUser")]
+        public IActionResult AddRating(UserRating userRating)
+        {
+            if (userRating.Number < 1 || userRating.Number > 5)
+            {
+                ModelState.AddModelError("Number", "Rating-ul trebuie să fie între 1 și 5.");
+            }
+
+            if (ModelState.IsValid)
+            {
+                var existingRating = db.UserRatings
+                                       .FirstOrDefault(ur => ur.ProductId == userRating.ProductId && ur.UserId == _userManager.GetUserId(User));
+
+                if (existingRating != null)
+                {
+                    // Actualizează rating-ul existent
+                    existingRating.Number = userRating.Number;
+                    TempData["message"] = "Rating-ul a fost actualizat.";
+                }
+                else
+                {
+                    // Adaugă un rating nou
+                    userRating.UserId = _userManager.GetUserId(User);
+                    db.UserRatings.Add(userRating);
+                    TempData["message"] = "Rating-ul a fost adăugat.";
+                }
+
+                TempData["messageType"] = "alert-success";
+                db.SaveChanges();
+                return RedirectToAction("Show", new { id = userRating.ProductId });
+            }
+
+            var product = db.Products.FirstOrDefault(p => p.Id == userRating.ProductId);
+            ViewBag.ProductTitle = product?.Title;
+            return View(userRating);
         }
 
 
