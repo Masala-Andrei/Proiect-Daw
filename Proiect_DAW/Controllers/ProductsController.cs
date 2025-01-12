@@ -71,13 +71,54 @@ namespace Proiect_DAW.Controllers
 
         public IActionResult Index()
         {
-            var products = db.Products.ToList();
+            var products = db.Products.Include("Category")
+                                      .Include("User");
+            // MOTOR DE CAUTARE
+
+            var search = "";
+
+            if (Convert.ToString(HttpContext.Request.Query["search"]) != null)
+            {
+                search = Convert.ToString(HttpContext.Request.Query["search"]).Trim(); // eliminam spatiile libere 
+
+                // Cautare in articol (Title si Content)
+
+                List<int> articleIds = db.Products.Where
+                                        (
+                                         at => at.Title.Contains(search)
+                                         || at.Description.Contains(search)
+                                        ).Select(a => a.Id).ToList();
+
+                // Cautare in comentarii (Content)
+                List<int> articleIdsOfCommentsWithSearchString = db.Reviews
+                                        .Where
+                                        (
+                                         c => c.Content.Contains(search)
+                                        ).Select(c => (int)c.ProductId).ToList();
+
+                // Se formeaza o singura lista formata din toate id-urile selectate anterior
+                List<int> mergedIds = articleIds.Union(articleIdsOfCommentsWithSearchString).ToList();
+
+
+                // Lista articolelor care contin cuvantul cautat
+                // fie in articol -> Title si Content
+                // fie in comentarii -> Content
+                products = db.Products.Where(article => mergedIds.Contains(article.Id))
+                                      .Include("Category")
+                                      .Include("User");
+
+            }
+
+            // ViewBag.OriceDenumireSugestiva
+            ViewBag.Products = products;
             if (TempData.ContainsKey("message"))
             {
                 ViewBag.Message = TempData["message"];
                 ViewBag.Alert = TempData["messageType"];
             }
-            return View(products);
+
+
+            return View();
         }
 
         private void SetAccessRights()
@@ -106,7 +147,7 @@ namespace Proiect_DAW.Controllers
 
 
 
-            SetAccessRights();
+
 
             double averageRating = product.UserRatings != null && product.UserRatings.Count > 0
             ? product.UserRatings
@@ -196,6 +237,55 @@ namespace Proiect_DAW.Controllers
             }
         }
 
+        [HttpPost]
+        [Authorize(Roles = "User,Editor,Admin")]
+        public IActionResult Show([FromForm] Review review)
+        {
+            // Setăm data și utilizatorul curent
+            review.Date = DateTime.Now;
+            var userId = _userManager.GetUserId(User);
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                ModelState.AddModelError(string.Empty, "Utilizatorul nu este autentificat.");
+            }
+            else
+            {
+                review.UserId = userId;
+            }
+
+            // Verificăm validitatea modelului
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    db.Reviews.Add(review);
+                    db.SaveChanges();
+                    return Redirect("/Products/Show/" + review.ProductId);
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError(string.Empty, "Eroare la salvarea review-ului: " + ex.Message);
+                }
+            }
+
+            // În caz de eroare, reîncărcăm pagina produsului
+            Product prod = db.Products.Include("Category")
+                                      .Include("User")
+                                      .Include("Reviews")
+                                      .Include("Reviews.User")
+                                      .FirstOrDefault(p => p.Id == review.ProductId);
+
+            if (prod == null)
+            {
+                return NotFound("Produsul nu a fost găsit.");
+            }
+
+            ViewBag.Errors = ModelState.Values.SelectMany(v => v.Errors)
+                                              .Select(e => e.ErrorMessage)
+                                              .ToList();
+            return View(prod);
+        }
 
 
 

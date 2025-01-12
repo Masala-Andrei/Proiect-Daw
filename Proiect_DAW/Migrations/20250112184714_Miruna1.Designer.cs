@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Proiect_DAW.Data;
 
@@ -11,9 +12,11 @@ using Proiect_DAW.Data;
 namespace Proiect_DAW.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250112184714_Miruna1")]
+    partial class Miruna1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -284,6 +287,9 @@ namespace Proiect_DAW.Migrations
                     b.Property<int>("Price")
                         .HasColumnType("int");
 
+                    b.Property<int?>("Rating")
+                        .HasColumnType("int");
+
                     b.Property<int>("Stock")
                         .HasColumnType("int");
 
@@ -293,9 +299,6 @@ namespace Proiect_DAW.Migrations
 
                     b.Property<string>("UserId")
                         .HasColumnType("nvarchar(450)");
-
-                    b.Property<bool>("Validated")
-                        .HasColumnType("bit");
 
                     b.HasKey("Id");
 
@@ -358,29 +361,6 @@ namespace Proiect_DAW.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Reviews");
-                });
-
-            modelBuilder.Entity("Proiect_DAW.Models.UserRating", b =>
-                {
-                    b.Property<int>("Id")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<int?>("ProductId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("Number")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id", "UserId", "ProductId");
-
-                    b.HasIndex("ProductId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("UserRatings");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -500,25 +480,6 @@ namespace Proiect_DAW.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Proiect_DAW.Models.UserRating", b =>
-                {
-                    b.HasOne("Proiect_DAW.Models.Product", "Product")
-                        .WithMany("UserRatings")
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Proiect_DAW.Models.ApplicationUser", "User")
-                        .WithMany("UserRatings")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Product");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("Proiect_DAW.Models.ApplicationUser", b =>
                 {
                     b.Navigation("Orders");
@@ -526,8 +487,6 @@ namespace Proiect_DAW.Migrations
                     b.Navigation("Products");
 
                     b.Navigation("Reviews");
-
-                    b.Navigation("UserRatings");
                 });
 
             modelBuilder.Entity("Proiect_DAW.Models.Category", b =>
@@ -545,8 +504,6 @@ namespace Proiect_DAW.Migrations
                     b.Navigation("ProductOrders");
 
                     b.Navigation("Reviews");
-
-                    b.Navigation("UserRatings");
                 });
 #pragma warning restore 612, 618
         }
