@@ -13,12 +13,12 @@ namespace Proiect_DAW.Models
         public string Content { get; set; }
         public DateTime Date { get; set; }
         public int ProductId { get; set; }
-        public string UserId {  get; set; }
+        public string? UserId {  get; set; }
 
         //Un review apartine unui singur user
-        public virtual ApplicationUser User { get; set; }
+        public virtual ApplicationUser? User { get; set; }
 
         //Un review apartine unui singur produs
-        public virtual Product Product { get; set; }
+        public virtual Product? Product { get; set; }
     }
 }
