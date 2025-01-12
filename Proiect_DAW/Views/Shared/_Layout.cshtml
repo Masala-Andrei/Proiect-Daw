@@ -36,7 +36,7 @@
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Orders" asp-action="Index">Cos de cumparaturi</a>
                             </li>
-                        }
+                        }else
 
                         @if (User.IsInRole("Colaborator"))
                         {
@@ -54,7 +54,7 @@
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Orders" asp-action="Index">Cos de cumparaturi</a>
                             </li>
-                        }
+                        }else
 
                         @if (User.IsInRole("RegisteredUser"))
                         {
@@ -63,6 +63,15 @@
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Orders" asp-action="Index">Cos de cumparaturi</a>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Products" asp-action="Index">Afisare articole</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Bookmarks" asp-action="Index">Colectii</a>
                             </li>
                         }
                     </ul>
