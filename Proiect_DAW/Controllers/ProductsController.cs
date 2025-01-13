@@ -29,38 +29,44 @@ namespace Proiect_DAW.Controllers
         }
 
         [Authorize(Roles = "Colaborator,Admin")]
+        [Authorize(Roles = "Colaborator,Admin")]
         public IActionResult New()
         {
             Product product = new Product();
-
-            //product.Rating = 1;
-
             product.Categ = GetAllCategories();
-
             return View(product);
         }
 
-        // Se adauga articolul in baza de date
-        // Doar utilizatorii cu rolul Editor si Admin pot adauga articole in platforma
         [Authorize(Roles = "Colaborator,Admin")]
         [HttpPost]
-
         public IActionResult New(Product product)
         {
-            //var sanitizer = new HtmlSanitizer();
-
-
-            // preluam Id-ul utilizatorului care posteaza articolul
             product.UserId = _userManager.GetUserId(User);
+
+            // Products added by collaborators need validation
+            if (User.IsInRole("Colaborator"))
+            {
+                product.Validated = false; // Mark product as not validated
+            }
+            else if (User.IsInRole("Admin"))
+            {
+                product.Validated = true; // Admin-added products are automatically validated
+            }
 
             if (ModelState.IsValid)
             {
-
                 db.Products.Add(product);
                 db.SaveChanges();
-                TempData["message"] = "Produsul a fost adaugat";
+
+                TempData["message"] = "Produsul a fost adăugat cu succes.";
                 TempData["messageType"] = "alert-success";
-                return RedirectToAction("Index");
+
+                if (User.IsInRole("Colaborator"))
+                {
+                    return RedirectToAction("ValidateProducts"); // Redirect to validation queue
+                }
+
+                return RedirectToAction("Index"); // Admins can immediately see their products
             }
             else
             {
@@ -72,7 +78,10 @@ namespace Proiect_DAW.Controllers
         public IActionResult Index()
         {
             var products = db.Products.Include("Category")
-                                      .Include("User");
+                                      .Include("User")
+                                       .Where(p => p.Validated);
+
+
             // MOTOR DE CAUTARE
 
             var search = "";
@@ -108,6 +117,14 @@ namespace Proiect_DAW.Controllers
                                       .Include("User");
 
             }
+
+            var productStockStatuses = products.Select(p => new
+            {
+                ProductId = p.Id,
+                StockStatus = p.Stock > 0 ? "In stoc" : "Indisponibil"
+            }).ToDictionary(p => p.ProductId, p => p.StockStatus);
+
+            ViewBag.ProductStockStatuses = productStockStatuses;
 
             // ViewBag.OriceDenumireSugestiva
             ViewBag.Products = products;
@@ -146,7 +163,12 @@ namespace Proiect_DAW.Controllers
                                           .First();
 
 
-
+            if (product == null || (!product.Validated && !User.IsInRole("Admin")))
+            {
+                TempData["message"] = "Produsul nu este disponibil.";
+                TempData["messageType"] = "alert-danger";
+                return RedirectToAction("Index");
+            }
 
 
             double averageRating = product.UserRatings != null && product.UserRatings.Count > 0
@@ -157,6 +179,13 @@ namespace Proiect_DAW.Controllers
 
             product.Rating = averageRating;
 
+            int totalRatings = product.UserRatings?.Count ?? 0;
+            ViewBag.TotalRatings = totalRatings;
+
+            int productInCartQuantity = 0;
+            int remainingStock = product.Stock - productInCartQuantity;
+            ViewBag.ProductInCartQuantity = productInCartQuantity;
+            ViewBag.RemainingStock = remainingStock;
 
             if (TempData.ContainsKey("message"))
             {
@@ -212,7 +241,7 @@ namespace Proiect_DAW.Controllers
 
                     if (User.IsInRole("Admin"))
                     {
-                        product.Validated = requestProduct.Validated;
+                        product.Validated = true;
                     }
                     else
                     {

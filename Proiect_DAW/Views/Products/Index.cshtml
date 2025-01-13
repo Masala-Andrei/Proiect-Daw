@@ -1,5 +1,5 @@
 ﻿<br />
-<h2 class="text-center" style="color: #FF7043;">Afisare produse</h2>
+<h2 class="text-center" style="color: #FF7043;">Afisare Produse</h2>
 <br />
 
 @if (ViewBag.Message != null)
@@ -9,7 +9,7 @@
     </div>
 }
 
-@* Motorul de cautare *@
+<!-- Search Bar -->
 <form method="GET">
     <div class="input-group mb-3" style="max-width: 600px; margin: 0 auto;">
         <input type="text" class="form-control" placeholder="Search topics or keywords" name="search"
@@ -29,10 +29,21 @@
                 <p><strong>Descriere:</strong> @product.Description</p>
                 <p><strong>Categorie:</strong> @product.Category.CategoryName</p>
                 <p><strong>Preț:</strong> @product.Price RON</p>
+                <p>
+                    <strong>Stock Status:</strong>
+                    @if (ViewBag.ProductStockStatuses[product.Id] == "In stoc")
+                    {
+                        <span style="color: green;">In stoc</span>
+                    }
+                    else
+                    {
+                        <span style="color: red;">Indisponibil</span>
+                    }
+                </p>
             </div>
             <div class="card-footer text-center" style="background-color: #FFE0B2;">
                 <a class="btn" href="@Url.Action("Show", "Products", new { id = product.Id })"
-                   style="background-color: #FF7043; color: white;">Afisare produs</a>
+                   style="background-color: #FF7043; color: white;">Afisare Produs</a>
             </div>
         </div>
     }
