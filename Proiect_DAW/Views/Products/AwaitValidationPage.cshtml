@@ -1,0 +1,8 @@
+﻿@if (ViewBag.Message != null)
+{
+    <div class="alert alert-info" role="alert">
+        <h4 class="alert-heading">Notificare</h4>
+        <p>@ViewBag.Message</p>
+    </div>
+}
+<a href="@Url.Action("Index", "Products")" class="btn btn-primary">Înapoi la produse</a>
