@@ -33,16 +33,14 @@ namespace Proiect_DAW.Controllers
         [Authorize(Roles = "User,Editor,Admin")]
         public IActionResult Edit(int id)
         {
-            // Retrieve the review from the database
             var review = db.Reviews.FirstOrDefault(r => r.Id == id);
 
-            // If review not found, return NotFound
             if (review == null)
             {
                 return NotFound("Review-ul nu a fost găsit.");
             }
 
-            // Only allow the user who created the review or an admin to edit it
+            
             var userId = _userManager.GetUserId(User);
             if (review.UserId != userId && !User.IsInRole("Admin"))
             {
@@ -51,7 +49,7 @@ namespace Proiect_DAW.Controllers
                 return Redirect("/Products/Show/" + review.ProductId);
             }
 
-            // Pass the review to the view for editing
+            
             return View(review);
         }
 
@@ -92,7 +90,7 @@ namespace Proiect_DAW.Controllers
 
 
         [HttpPost]
-        [Authorize(Roles = "User,Admin")]
+        [Authorize(Roles = "User, Editor, Admin")]
         public IActionResult Delete(int id)
         {
             var review = db.Reviews.FirstOrDefault(r => r.Id == id);
