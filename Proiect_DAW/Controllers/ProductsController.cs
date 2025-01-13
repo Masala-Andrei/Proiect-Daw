@@ -108,23 +108,12 @@ namespace Proiect_DAW.Controllers
             var search = "";
             if (!string.IsNullOrEmpty(Convert.ToString(HttpContext.Request.Query["search"])))
             {
-                search = Convert.ToString(HttpContext.Request.Query["search"]).Trim(); // remove leading/trailing spaces
+                search = Convert.ToString(HttpContext.Request.Query["search"]).Trim(); // Remove leading/trailing spaces
 
-                // Search in Title and Description
-                List<int> articleIds = db.Products.Where(at => at.Title.Contains(search) || at.Description.Contains(search))
-                                                  .Select(a => a.Id).ToList();
-
-                // Search in Reviews (Content)
-                List<int> articleIdsOfCommentsWithSearchString = db.Reviews
-                                                .Where(c => c.Content.Contains(search))
-                                                .Select(c => (int)c.ProductId).ToList();
-
-                // Merge the results
-                List<int> mergedIds = articleIds.Union(articleIdsOfCommentsWithSearchString).ToList();
-
-                // Filter products by merged search results
-                productsWithRatings = productsWithRatings.Where(article => mergedIds.Contains(article.Id)).ToList();
+                // Filter products by Title only
+                productsWithRatings = productsWithRatings.Where(p => p.Title.Contains(search, StringComparison.OrdinalIgnoreCase)).ToList();
             }
+
 
             // Sorting logic (works in memory)
             var sortField = Convert.ToString(HttpContext.Request.Query["sortField"]);
