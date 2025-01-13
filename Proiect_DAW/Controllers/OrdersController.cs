@@ -33,54 +33,109 @@ public class OrdersController : Controller
         var userId = _userManager.GetUserId(User);
         var product = db.Products.Find(productId);
 
+
         if (product == null || quantity <= 0 || quantity > product.Stock)
         {
             TempData["message"] = "Produsul nu există sau cantitatea solicitată nu este disponibilă.";
             TempData["messageType"] = "alert-danger";
-            return RedirectToAction("Index", "Products");
+            return RedirectToAction("Show", "Products", new { id = productId });
         }
 
-        var cartItem = new ProductOrder
+        // Check if the user already has an active "Pending" order
+        var existingOrder = _db.Orders.FirstOrDefault(o => o.UserId == userId && o.Status == "Pending");
+
+        if (existingOrder == null)
         {
-            ProductId = productId,
-            Quantity = quantity,
-            Price = quantity * product.Price,
-            Product = product
-        };
+            // Create a new order if there is no existing "Pending" order
+            existingOrder = new Order
+            {
+                UserId = userId,
+                Date = DateTime.Now,
+                Status = "Pending"
+            };
+            _db.Orders.Add(existingOrder);
+            _db.SaveChanges();
+        }
 
-        db.ProductOrders.Add(cartItem);
-        db.SaveChanges();
+        // Check if the product is already in the cart
+        var existingCartItem = _db.ProductOrders.FirstOrDefault(po => po.ProductId == productId && po.OrderId == existingOrder.Id);
 
+        if (existingCartItem != null)
+        {
+            // If the product exists, update its quantity
+            existingCartItem.Quantity += quantity;
+
+            // Ensure the new quantity does not exceed stock
+            if (existingCartItem.Quantity > product.Stock)
+            {
+                TempData["message"] = "Cantitatea solicitată depășește stocul disponibil.";
+                TempData["messageType"] = "alert-danger";
+                return RedirectToAction("Show", "Products", new { id = productId });
+            }
+
+            // Update price based on new quantity
+            existingCartItem.Price = existingCartItem.Quantity * product.Price;
+        }
+        else
+        {
+            // If the product doesn't exist in the cart, add it as a new item
+            var cartItem = new ProductOrder
+            {
+                ProductId = productId,
+                Quantity = quantity,
+                Price = quantity * product.Price,
+                OrderId = existingOrder.Id
+            };
+
+            _db.ProductOrders.Add(cartItem);
+        }
+
+        // Decrease stock in the database
+        product.Stock -= quantity;
+
+
+        _db.SaveChanges();
+
+        // Provide a success message to the user
         TempData["message"] = "Produsul a fost adăugat în coș.";
         TempData["messageType"] = "alert-success";
 
-        return RedirectToAction("Index");
+        return RedirectToAction("Show", "Products", new { id = productId });
     }
 
-    // Scoate un produs din coș
-    [HttpPost]
-    [Authorize(Roles = "User,Editor,Admin")]
-    public IActionResult RemoveFromCart(int cartItemId, int orderId)
-    {
-        // Căutăm produsul în coșul de cumpărături pe baza cartItemId
-        var cartItem = db.ProductOrders
-                          .FirstOrDefault(c => c.Id == cartItemId && c.OrderId == orderId);
 
-        // Verificăm dacă produsul există și dacă OrderId este corect
+
+
+    // Scoate un produs din coș
+
+    [HttpPost]
+    public IActionResult RemoveFromCart(int cartItemId)
+    {
+        var cartItem = _db.ProductOrders.FirstOrDefault(po => po.Id == cartItemId);
+
         if (cartItem != null)
         {
-            // Eliminăm produsul din coș
-            db.ProductOrders.Remove(cartItem);
-            db.SaveChanges();
+            var product = _db.Products.Find(cartItem.ProductId);
 
-            // Mesaj de succes
+            if (product != null)
+            {
+                // Increase stock because the product is removed from the cart
+                product.Stock += cartItem.Quantity;
+            }
+
+            // Remove the cart item
+            _db.ProductOrders.Remove(cartItem);
+            _db.SaveChanges();
+
+
             TempData["message"] = "Produsul a fost eliminat din coș.";
             TempData["messageType"] = "alert-warning";
         }
         else
         {
-            // Dacă produsul nu a fost găsit sau OrderId nu se potrivește
-            TempData["message"] = "Produsul nu a fost găsit sau nu face parte din coșul tău.";
+
+
+            TempData["message"] = "Produsul nu a fost găsit în coș.";
             TempData["messageType"] = "alert-danger";
         }
 
@@ -89,15 +144,16 @@ public class OrdersController : Controller
     }
 
 
+
+
     // Plasează comanda
     [HttpPost]
-    [Authorize(Roles = "User,Editor,Admin")]
     public IActionResult PlaceOrder()
     {
         var userId = _userManager.GetUserId(User);
-        var cartItems = db.Orders.Where(ci => ci.UserId == userId).ToList();
+        var existingOrder = _db.Orders.FirstOrDefault(o => o.UserId == userId && o.Status == "Pending");
 
-        if (!cartItems.Any())
+        if (existingOrder == null)
         {
             TempData["message"] = "Nu aveți produse în coș.";
             TempData["messageType"] = "alert-danger";
@@ -105,16 +161,45 @@ public class OrdersController : Controller
         }
         var order = db.Orders.FirstOrDefault(c => c.Status != "Plasata" && c.UserId == userId);
 
-        order.Status = "Plasata";
-       
-        db.SaveChanges();
+        var cartItems = _db.ProductOrders.Where(ci => ci.OrderId == existingOrder.Id).ToList();
 
-        
+        if (!cartItems.Any())
+        {
+            TempData["message"] = "Coșul este gol.";
+            TempData["messageType"] = "alert-danger";
+            return RedirectToAction("Index");
+        }
+
+        // Create a new order with status "Plasata"
+        var order = new Order
+        {
+            UserId = userId,
+            Date = DateTime.Now,
+            Status = "Plasata"
+        };
+
+        _db.Orders.Add(order);
+        _db.SaveChanges();
+
+
+        // Remove cart items from the database
+        foreach (var cartItem in cartItems)
+        {
+            _db.ProductOrders.Remove(cartItem);
+        }
+
+        // Update the status of the existing order to "Plasata"
+        existingOrder.Status = "Plasata";
+        _db.SaveChanges();
+
+        // Provide success message
         TempData["message"] = "Comanda a fost plasată cu succes.";
         TempData["messageType"] = "alert-success";
 
         return RedirectToAction("Index", "Products");
     }
+
+
 
     // Funcție pentru a obține articolele din coș
     private List<ProductOrder> GetCartItems()
