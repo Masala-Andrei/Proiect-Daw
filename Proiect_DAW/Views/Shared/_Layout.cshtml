@@ -22,7 +22,7 @@
                         @if (User.IsInRole("Admin"))
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Products" asp-action="Index">Afisare articole</a>
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Products" asp-action="Index">Afisare produse</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Products" asp-action="New">Adaugare produs</a>
@@ -31,21 +31,22 @@
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Categories" asp-action="Index">Afisare categorii</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Users" asp-action="Index">Afisare utilizatori</a>
+                                <a class="nav-link text-dark" asp-area="" asp-controller="ManageUsers" asp-action="Index">Afisare utilizatori</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Orders" asp-action="Index">Cos de cumparaturi</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Products" asp-action="ValidateProducts">Validare produs</a>
                             </li>
                         }else
 
                         @if (User.IsInRole("Colaborator"))
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Products" asp-action="Index">Afisare articole</a>
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Products" asp-action="Index">Afisare produse</a>
                             </li>
                             <li class="nav-item">
-
-                              
 
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Products" asp-action="New">Adaugare produs</a>
 
@@ -59,7 +60,7 @@
                         @if (User.IsInRole("RegisteredUser"))
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Products" asp-action="Index">Afisare articole</a>
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Products" asp-action="Index">Afisare produse</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Orders" asp-action="Index">Cos de cumparaturi</a>
@@ -68,10 +69,7 @@
                         else
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Products" asp-action="Index">Afisare articole</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Bookmarks" asp-action="Index">Colectii</a>
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Products" asp-action="Index">Afisare produse</a>
                             </li>
                         }
                     </ul>

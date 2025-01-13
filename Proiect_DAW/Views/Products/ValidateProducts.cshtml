@@ -1,19 +1,25 @@
-﻿@model IEnumerable<Product>
+﻿@model IEnumerable<Proiect_DAW.Models.Product>
 
-<h1>Produse Nevalidate</h1>
-
-@if (TempData["message"] != null)
-{
-    <div class="alert @TempData["messageType"]">@TempData["message"]</div>
+@{
+    ViewBag.Title = "Validate Products";
 }
 
-<table class="table">
+<h1>Validate Products</h1>
+
+@if (TempData.ContainsKey("message"))
+{
+    <div class="alert @TempData["messageType"]">
+        @TempData["message"]
+    </div>
+}
+
+<table class="table table-bordered">
     <thead>
         <tr>
-            <th>Titlu</th>
-            <th>Descriere</th>
-            <th>Categorie</th>
-            <th>Actiuni</th>
+            <th>Title</th>
+            <th>Category</th>
+            <th>Price</th>
+            <th>Actions</th>
         </tr>
     </thead>
     <tbody>
@@ -21,12 +27,11 @@
         {
             <tr>
                 <td>@product.Title</td>
-                <td>@product.Description</td>
-                <td>@product.Category.CategoryName</td>
+                <td>@product.Category?.CategoryName</td>
+                <td>@product.Price</td>
                 <td>
-                    <form asp-action="ValidateProduct" method="post">
-                        <input type="hidden" name="id" value="@product.Id" />
-                        <button type="submit" class="btn btn-success">Valideaza</button>
+                    <form action="@Url.Action("ValidateProducts", "Products", new { id = product.Id })" method="post">
+                        <button type="submit" class="btn btn-success">Validate</button>
                     </form>
                 </td>
             </tr>

@@ -1,0 +1,36 @@
+﻿@{
+    ViewData["Title"] = "Manage Users";
+}
+
+<div class="container my-5">
+    <h2>Manage Users</h2>
+
+    @if (TempData["message"] != null)
+    {
+        <div class="alert @TempData["messageType"]">
+            @TempData["message"]
+        </div>
+    }
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in ViewBag.UsersList)
+            {
+                <tr>
+                    <td>@user.UserName</td>
+                    <td>@user.Email</td>
+                    <td>
+                        <a href="@Url.Action("Show", "ManageUsers", new { id = user.Id })" class="btn btn-info">View Roles</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
