@@ -25,7 +25,7 @@
             <label for="sortField" style="color: #FF7043;">Sort by</label>
             <select name="sortField" id="sortField" class="form-control" style="background-color: #FFF3E0; border: 1px solid #FFB74D; color: #FF7043;">
                 <option value="price">Price</option>
-                <option value="stars">Rating</option>
+                <option value="rating">Rating</option>
             </select>
         </div>
 
@@ -63,6 +63,17 @@
                     else
                     {
                         <span style="color: red;">Indisponibil</span>
+                    }
+                </p>
+                <p>
+                    <strong>Rating:</strong>
+                    @if (@product.Rating > 0)
+                    {
+                        <span style="color: #FF7043;">@product.Rating.ToString("0.0") / 5</span>
+                    }
+                    else
+                    {
+                        <span style="color: #FF7043;">@product.Rating</span>
                     }
                 </p>
             </div>

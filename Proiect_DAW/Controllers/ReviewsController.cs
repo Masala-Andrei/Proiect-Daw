@@ -30,7 +30,7 @@ namespace Proiect_DAW.Controllers
             return View();
         }
 
-        [Authorize(Roles = "User,Editor,Admin")]
+        [Authorize(Roles = "RegisteredUser,Colaborator,Admin")]
         public IActionResult Edit(int id)
         {
             // Retrieve the review from the database
@@ -57,7 +57,7 @@ namespace Proiect_DAW.Controllers
 
 
         [HttpPost]
-        [Authorize(Roles = "User,Editor,Admin")]
+        [Authorize(Roles = "RegisteredUser,Colaborator,Admin")]
         public IActionResult Edit(int id, Review requestReview)
         {
             Review review = db.Reviews.Find(id);
@@ -92,7 +92,7 @@ namespace Proiect_DAW.Controllers
 
 
         [HttpPost]
-        [Authorize(Roles = "User,Admin")]
+        [Authorize(Roles = "RegisteredUser,Colaborator, Admin")]
         public IActionResult Delete(int id)
         {
             var review = db.Reviews.FirstOrDefault(r => r.Id == id);
