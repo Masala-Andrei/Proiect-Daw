@@ -85,46 +85,48 @@ namespace Proiect_DAW.Controllers
         public IActionResult Index()
         {
             var products = db.Products.Include("Category")
+                                      .Include("Reviews")
                                       .Include("User")
-                                       .Where(p => p.Validated);
+                                      .Include("Reviews.User")
+                                      .Include("UserRatings")
+                                      .Where(p => p.Validated);
 
-
-            // MOTOR DE CAUTARE
-
-            var search = "";
-
-            if (Convert.ToString(HttpContext.Request.Query["search"]) != null)
+            // Calculate average ratings (after fetching the products)
+            foreach (var product in products)
             {
-                search = Convert.ToString(HttpContext.Request.Query["search"]).Trim(); // eliminam spatiile libere 
+                double averageRating = product.UserRatings != null && product.UserRatings.Count > 0
+                    ? product.UserRatings
+                        .Where(ur => ur.Number >= 1 && ur.Number <= 5) // Filter only valid ratings
+                        .Average(ur => ur.Number) ?? 0.0 // Default to 0 if no valid ratings
+                    : 0.0;
 
-                // Cautare in articol (Title si Content)
+                product.Rating = averageRating;
+            }
+            var productsWithRatings = products.ToList();
 
-                List<int> articleIds = db.Products.Where
-                                        (
-                                         at => at.Title.Contains(search)
-                                         || at.Description.Contains(search)
-                                        ).Select(a => a.Id).ToList();
+            // Search logic (remains unchanged)
+            var search = "";
+            if (!string.IsNullOrEmpty(Convert.ToString(HttpContext.Request.Query["search"])))
+            {
+                search = Convert.ToString(HttpContext.Request.Query["search"]).Trim(); // remove leading/trailing spaces
 
-                // Cautare in comentarii (Content)
+                // Search in Title and Description
+                List<int> articleIds = db.Products.Where(at => at.Title.Contains(search) || at.Description.Contains(search))
+                                                  .Select(a => a.Id).ToList();
+
+                // Search in Reviews (Content)
                 List<int> articleIdsOfCommentsWithSearchString = db.Reviews
-                                        .Where
-                                        (
-                                         c => c.Content.Contains(search)
-                                        ).Select(c => (int)c.ProductId).ToList();
+                                                .Where(c => c.Content.Contains(search))
+                                                .Select(c => (int)c.ProductId).ToList();
 
-                // Se formeaza o singura lista formata din toate id-urile selectate anterior
+                // Merge the results
                 List<int> mergedIds = articleIds.Union(articleIdsOfCommentsWithSearchString).ToList();
 
-
-                // Lista articolelor care contin cuvantul cautat
-                // fie in articol -> Title si Content
-                // fie in comentarii -> Content
-                products = db.Products.Where(article => mergedIds.Contains(article.Id))
-                                      .Include("Category")
-                                      .Include("User");
-
+                // Filter products by merged search results
+                productsWithRatings = productsWithRatings.Where(article => mergedIds.Contains(article.Id)).ToList();
             }
 
+            // Sorting logic (works in memory)
             var sortField = Convert.ToString(HttpContext.Request.Query["sortField"]);
             var sortOrder = Convert.ToString(HttpContext.Request.Query["sortOrder"]);
 
@@ -133,39 +135,41 @@ namespace Proiect_DAW.Controllers
                 switch (sortField)
                 {
                     case "price":
-                        products = sortOrder == "asc"
-                            ? products.OrderBy(p => p.Price)
-                            : products.OrderByDescending(p => p.Price);
+                        productsWithRatings = sortOrder == "asc"
+                            ? productsWithRatings.OrderBy(p => p.Price).ToList()
+                            : productsWithRatings.OrderByDescending(p => p.Price).ToList();
                         break;
 
                     case "rating":
-                        products = sortOrder == "asc"
-                            ? products.OrderBy(p => p.Rating)
-                            : products.OrderByDescending(p => p.Rating);
+                        productsWithRatings = sortOrder == "asc"
+                            ? productsWithRatings.OrderBy(p => p.Rating).ToList()
+                            : productsWithRatings.OrderByDescending(p => p.Rating).ToList();
                         break;
                 }
             }
 
-
-            var productStockStatuses = products.Select(p => new
+            // Stock status logic
+            var productStockStatuses = productsWithRatings.Select(p => new
             {
                 ProductId = p.Id,
                 StockStatus = p.Stock > 0 ? "In stoc" : "Indisponibil"
             }).ToDictionary(p => p.ProductId, p => p.StockStatus);
 
+            // Passing the data to View
             ViewBag.ProductStockStatuses = productStockStatuses;
+            ViewBag.Products = productsWithRatings;
 
-            // ViewBag.OriceDenumireSugestiva
-            ViewBag.Products = products;
+            // Show TempData message if exists
             if (TempData.ContainsKey("message"))
             {
                 ViewBag.Message = TempData["message"];
                 ViewBag.Alert = TempData["messageType"];
             }
 
-
             return View();
         }
+
+
 
 
         private void SetAccessRights()
@@ -261,20 +265,31 @@ namespace Proiect_DAW.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Colaborator,Admin")]
+
         public IActionResult Edit(int id, Product requestProduct)
         {
+            // Find the product by id
             Product product = db.Products.Find(id);
+
+            if (product == null)
+            {
+                TempData["message"] = "Produsul nu a fost găsit.";
+                TempData["messageType"] = "alert-danger";
+                return RedirectToAction("Index");
+            }
 
             if (ModelState.IsValid)
             {
                 if ((product.UserId == _userManager.GetUserId(User)) || User.IsInRole("Admin"))
                 {
+                    // Update the product properties
                     product.Title = requestProduct.Title;
                     product.Description = requestProduct.Description;
                     product.CategoryId = requestProduct.CategoryId;
                     product.Price = requestProduct.Price;
                     product.Stock = requestProduct.Stock;
 
+                    // Admins validate the product automatically
                     if (User.IsInRole("Admin"))
                     {
                         product.Validated = true;
@@ -284,11 +299,16 @@ namespace Proiect_DAW.Controllers
                         product.Validated = false;
                     }
 
+                    // Save changes to the database
+                    db.SaveChanges();
+
                     if (User.IsInRole("Colaborator"))
                     {
                         TempData["collaboratorMessage"] = "Produsul a fost editat și se așteaptă validare de la un admin.";
                         return RedirectToAction("AwaitValidationPage");
                     }
+
+                    // Success message
                     TempData["message"] = "Produsul a fost editat cu succes.";
                     TempData["messageType"] = "alert-success";
                     return RedirectToAction("Index");
@@ -302,14 +322,16 @@ namespace Proiect_DAW.Controllers
             }
             else
             {
-                requestProduct.Categ = GetAllCategories();
+                // If model validation fails, return to the view with the requestProduct model
+                requestProduct.Categ = GetAllCategories(); // Ensure this is populated correctly
                 return View(requestProduct);
             }
         }
 
+
         // Metoda pentru a adăuga produsul în coș
         [HttpPost]
-        [Authorize(Roles = "User,Editor,Admin")]
+        [Authorize(Roles = "RegisteredUser,Editor,Admin")]
         public IActionResult AddToCart(int productId, int quantity)
         {
             var product = db.Products.Include(p => p.Category).FirstOrDefault(p => p.Id == productId);
@@ -372,7 +394,7 @@ namespace Proiect_DAW.Controllers
 
 
         [HttpPost]
-        [Authorize(Roles = "User,Editor,Admin")]
+        [Authorize(Roles = "RegisteredUser,Colaborator,Admin")]
         public IActionResult Show([FromForm] Review review)
         {
             // Setăm data și utilizatorul curent
@@ -542,6 +564,8 @@ namespace Proiect_DAW.Controllers
 
             return RedirectToAction("ValidateProducts");
         }
+
+
 
 
         [NonAction]

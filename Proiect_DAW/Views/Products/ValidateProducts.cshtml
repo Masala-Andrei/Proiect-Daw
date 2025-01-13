@@ -4,37 +4,153 @@
     ViewBag.Title = "Validate Products";
 }
 
-<h1>Validate Products</h1>
+<div class="container my-5">
+    <h2>Validate Products</h2>
 
-@if (TempData.ContainsKey("message"))
-{
-    <div class="alert @TempData["messageType"]">
-        @TempData["message"]
-    </div>
-}
+    @if (TempData.ContainsKey("message"))
+    {
+        <div class="alert @TempData["messageType"]">
+            @TempData["message"]
+        </div>
+    }
 
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>Title</th>
-            <th>Category</th>
-            <th>Price</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var product in Model)
-        {
+    <table class="table">
+        <thead>
             <tr>
-                <td>@product.Title</td>
-                <td>@product.Category?.CategoryName</td>
-                <td>@product.Price</td>
-                <td>
-                    <form action="@Url.Action("ValidateProducts", "Products", new { id = product.Id })" method="post">
-                        <button type="submit" class="btn btn-success">Validate</button>
-                    </form>
-                </td>
+                <th>Title</th>
+                <th>Description</th>
+                <th>Category</th>
+                <th>Price</th>
+                <th>Stock</th>
+                <th>Validated</th>
+                <th>Actions</th>
             </tr>
+        </thead>
+        <tbody>
+            @foreach (var product in Model)
+            {
+                <tr>
+                    <td>@product.Title</td>
+                    <td>@product.Description</td>
+                    <td>@product.Category?.CategoryName</td>
+                    <td>@product.Price</td>
+                    <td>@product.Stock</td>
+                    <td>@Html.Raw(product.Validated ? "<span class='badge bg-success'>Validated</span>" : "<span class='badge bg-danger'>Not Validated</span>")</td>
+                    <td>
+                        <form action="@Url.Action("ValidateProducts", "Products", new { id = product.Id })" method="post">
+                            <button type="submit" class="btn btn-success">Validate</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<style>
+    /* General Container Styling */
+    .container {
+        background-color: #f9f1fc; /* Light purple background */
+        border-radius: 10px;
+        padding: 30px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Title Styling */
+    h2 {
+        color: #8e44ad; /* Darker purple for the title */
+        font-family: 'Arial', sans-serif;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    /* Table Styling */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
+
+        table th, table td {
+            padding: 12px;
+            text-align: center;
         }
-    </tbody>
-</table>
+
+    /* Table Header Styling */
+    thead {
+        background-color: #9b59b6; /* Lighter purple for the header */
+        color: white;
+        font-weight: bold;
+    }
+
+    /* Table Row Styling */
+    tbody tr:nth-child(even) {
+        background-color: #f1e6f4; /* Light lavender for even rows */
+    }
+
+    tbody tr:nth-child(odd) {
+        background-color: #ffffff; /* White for odd rows */
+    }
+
+    /* Button Styling */
+    .btn {
+        padding: 10px 20px;
+        border-radius: 5px;
+        border: none;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background-color 0.3s ease;
+    }
+
+    .btn-danger {
+        background-color: #e74c3c; /* Red for the delete button */
+        color: white;
+    }
+
+        .btn-danger:hover {
+            background-color: #c0392b; /* Darker red on hover */
+        }
+
+    .btn-success {
+        background-color: #8e44ad; /* Dark purple for the order button */
+        color: white;
+    }
+
+        .btn-success:hover {
+            background-color: #7d3c8c; /* Darker purple on hover */
+        }
+
+    /* Alert Message Styling */
+    .alert {
+        font-size: 14px;
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 5px;
+        text-align: center;
+    }
+
+        .alert.alert-success {
+            background-color: #d4edda; /* Light green background for success */
+            color: #155724;
+        }
+
+        .alert.alert-danger {
+            background-color: #f8d7da; /* Light red background for danger */
+            color: #721c24;
+        }
+
+    /* Badge Styling for Validated/Not Validated */
+    .badge {
+        padding: 5px 10px;
+        font-size: 12px;
+        border-radius: 5px;
+    }
+
+        .badge.bg-success {
+            background-color: #28a745; /* Green for validated */
+        }
+
+        .badge.bg-danger {
+            background-color: #dc3545; /* Red for not validated */
+        }
+</style>
