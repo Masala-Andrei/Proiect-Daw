@@ -18,6 +18,31 @@
     </div>
 </form>
 
+<!-- Sort Options -->
+<form method="GET" class="mb-5">
+    <div class="row">
+        <div class="col-md-6" style="max-width: 600px; margin: 0 auto;">
+            <label for="sortField" style="color: #FF7043;">Sort by</label>
+            <select name="sortField" id="sortField" class="form-control" style="background-color: #FFF3E0; border: 1px solid #FFB74D; color: #FF7043;">
+                <option value="price">Price</option>
+                <option value="stars">Rating</option>
+            </select>
+        </div>
+
+        <div class="col-md-6" style="max-width: 600px; margin: 0 auto;">
+            <label for="sortOrder" style="color: #FF7043;">Order</label>
+            <select name="sortOrder" id="sortOrder" class="form-control" style="background-color: #FFF3E0; border: 1px solid #FFB74D; color: #FF7043;">
+                <option value="asc">Ascending</option>
+                <option value="desc">Descending</option>
+            </select>
+        </div>
+
+        <div class="col-md-12 mt-3 text-center">
+            <button class="btn" style="background-color: #FF7043; color: white;" type="submit">Sort</button>
+        </div>
+    </div>
+</form>
+
 <div class="container my-5">
     @foreach (var product in ViewBag.Products)
     {

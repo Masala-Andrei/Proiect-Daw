@@ -58,21 +58,28 @@ namespace Proiect_DAW.Controllers
                 db.Products.Add(product);
                 db.SaveChanges();
 
-                TempData["message"] = "Produsul a fost adăugat cu succes.";
-                TempData["messageType"] = "alert-success";
+                
 
                 if (User.IsInRole("Colaborator"))
                 {
-                    return RedirectToAction("ValidateProducts"); // Redirect to validation queue
+                    TempData["collaboratorMessage"] = "Produsul a fost adăugat și se așteaptă validare de la un admin.";
+                    return RedirectToAction("AwaitValidationPage");
                 }
-
-                return RedirectToAction("Index"); // Admins can immediately see their products
+                TempData["message"] = "Produsul a fost adăugat cu succes.";
+                TempData["messageType"] = "alert-success";
+                return RedirectToAction("Index"); 
             }
             else
             {
                 product.Categ = GetAllCategories();
                 return View(product);
             }
+        }
+
+        public IActionResult AwaitValidationPage()
+        {
+            ViewBag.Message = TempData["collaboratorMessage"] ?? "Așteaptă validare de la un admin.";
+            return View();
         }
 
         public IActionResult Index()
@@ -118,6 +125,28 @@ namespace Proiect_DAW.Controllers
 
             }
 
+            var sortField = Convert.ToString(HttpContext.Request.Query["sortField"]);
+            var sortOrder = Convert.ToString(HttpContext.Request.Query["sortOrder"]);
+
+            if (!string.IsNullOrEmpty(sortField) && !string.IsNullOrEmpty(sortOrder))
+            {
+                switch (sortField)
+                {
+                    case "price":
+                        products = sortOrder == "asc"
+                            ? products.OrderBy(p => p.Price)
+                            : products.OrderByDescending(p => p.Price);
+                        break;
+
+                    case "rating":
+                        products = sortOrder == "asc"
+                            ? products.OrderBy(p => p.Rating)
+                            : products.OrderByDescending(p => p.Rating);
+                        break;
+                }
+            }
+
+
             var productStockStatuses = products.Select(p => new
             {
                 ProductId = p.Id,
@@ -137,6 +166,7 @@ namespace Proiect_DAW.Controllers
 
             return View();
         }
+
 
         private void SetAccessRights()
         {
@@ -216,10 +246,16 @@ namespace Proiect_DAW.Controllers
             }
             else
             {
-
-                TempData["message"] = "Nu aveti dreptul sa faceti modificari asupra unui articol care nu va apartine";
-                TempData["messageType"] = "alert-danger";
+                if (User.IsInRole("Colaborator"))
+                {
+                    TempData["collaboratorMessage"] = "Produsul a fost editat și se așteaptă validare de la un admin.";
+                    return RedirectToAction("AwaitValidationPage");
+                }
+                TempData["message"] = "Produsul a fost editat cu succes.";
+                TempData["messageType"] = "alert-success";
                 return RedirectToAction("Index");
+
+   
             }
         }
 
@@ -248,10 +284,13 @@ namespace Proiect_DAW.Controllers
                         product.Validated = false;
                     }
 
-                    TempData["message"] = "Produsul a fost modificat cu succes.";
+                    if (User.IsInRole("Colaborator"))
+                    {
+                        TempData["collaboratorMessage"] = "Produsul a fost editat și se așteaptă validare de la un admin.";
+                        return RedirectToAction("AwaitValidationPage");
+                    }
+                    TempData["message"] = "Produsul a fost editat cu succes.";
                     TempData["messageType"] = "alert-success";
-                    db.SaveChanges();
-
                     return RedirectToAction("Index");
                 }
                 else
