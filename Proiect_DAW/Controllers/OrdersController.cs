@@ -7,14 +7,16 @@ using Proiect_DAW.Models;
 
 public class OrdersController : Controller
 {
-    private readonly ApplicationDbContext _db;
+    private readonly ApplicationDbContext db;
     private readonly UserManager<ApplicationUser> _userManager;
 
     public OrdersController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
     {
-        _db = context;
+        db = context;
         _userManager = userManager;
     }
+
+    [Authorize(Roles = "User,Editor,Admin")]
 
     // Afișează coșul curent
     public IActionResult Index()
@@ -25,10 +27,11 @@ public class OrdersController : Controller
 
     // Adaugă produs în coș
     [HttpPost]
+    [Authorize(Roles = "User, Editor, Admin")]
     public IActionResult AddToCart(int productId, int quantity)
     {
         var userId = _userManager.GetUserId(User);
-        var product = _db.Products.Find(productId);
+        var product = db.Products.Find(productId);
 
         if (product == null || quantity <= 0 || quantity > product.Stock)
         {
@@ -45,8 +48,8 @@ public class OrdersController : Controller
             Product = product
         };
 
-        _db.ProductOrders.Add(cartItem);
-        _db.SaveChanges();
+        db.ProductOrders.Add(cartItem);
+        db.SaveChanges();
 
         TempData["message"] = "Produsul a fost adăugat în coș.";
         TempData["messageType"] = "alert-success";
@@ -56,26 +59,43 @@ public class OrdersController : Controller
 
     // Scoate un produs din coș
     [HttpPost]
-    public IActionResult RemoveFromCart(int cartItemId)
+    [Authorize(Roles = "User,Editor,Admin")]
+    public IActionResult RemoveFromCart(int cartItemId, int orderId)
     {
-        var cartItem = _db.ProductOrders.Find(cartItemId);
+        // Căutăm produsul în coșul de cumpărături pe baza cartItemId
+        var cartItem = db.ProductOrders
+                          .FirstOrDefault(c => c.Id == cartItemId && c.OrderId == orderId);
+
+        // Verificăm dacă produsul există și dacă OrderId este corect
         if (cartItem != null)
         {
-            _db.ProductOrders.Remove(cartItem);
-            _db.SaveChanges();
+            // Eliminăm produsul din coș
+            db.ProductOrders.Remove(cartItem);
+            db.SaveChanges();
+
+            // Mesaj de succes
             TempData["message"] = "Produsul a fost eliminat din coș.";
             TempData["messageType"] = "alert-warning";
         }
+        else
+        {
+            // Dacă produsul nu a fost găsit sau OrderId nu se potrivește
+            TempData["message"] = "Produsul nu a fost găsit sau nu face parte din coșul tău.";
+            TempData["messageType"] = "alert-danger";
+        }
 
+        // Redirecționăm utilizatorul către pagina principală a coșului
         return RedirectToAction("Index");
     }
 
+
     // Plasează comanda
     [HttpPost]
+    [Authorize(Roles = "User,Editor,Admin")]
     public IActionResult PlaceOrder()
     {
         var userId = _userManager.GetUserId(User);
-        var cartItems = _db.Orders.Where(ci => ci.UserId == userId).ToList();
+        var cartItems = db.Orders.Where(ci => ci.UserId == userId).ToList();
 
         if (!cartItems.Any())
         {
@@ -83,17 +103,11 @@ public class OrdersController : Controller
             TempData["messageType"] = "alert-danger";
             return RedirectToAction("Index");
         }
+        var order = db.Orders.FirstOrDefault(c => c.Status != "Plasata" && c.UserId == userId);
 
-        // Creăm o comandă cu statusul "Plasată"
-        var order = new Order
-        {
-            UserId = userId,
-            Date = DateTime.Now,
-            Status = "Plasata"
-        };
-
-        _db.Orders.Add(order);
-        _db.SaveChanges();
+        order.Status = "Plasata";
+       
+        db.SaveChanges();
 
         
         TempData["message"] = "Comanda a fost plasată cu succes.";
@@ -106,6 +120,6 @@ public class OrdersController : Controller
     private List<ProductOrder> GetCartItems()
     {
         var userId = _userManager.GetUserId(User);
-        return _db.ProductOrders.Include("Product").Where(ci => ci.Order.UserId == userId && ci.Order.Status != "Plasata").ToList();
+        return db.ProductOrders.Include("Product").Where(ci => ci.Order.UserId == userId && ci.Order.Status != "Plasata").ToList();
     }
 }
