@@ -93,7 +93,7 @@ namespace ArticlesApp.Controllers
         [HttpPost]
         public ActionResult Delete(int id)
         {
-            // Category category = db.Categories.Find(id);
+            
 
             Category category = db.Categories.Include("Products")
                                              .Include("Products.Reviews")

@@ -10,14 +10,12 @@
 
 <p style="color: #FF7043; font-weight: bold;">@Model.CategoryName</p>
 
-<!-- Formular Ștergere Categorie -->
 <form method="post" asp-controller="Categories" asp-action="Delete" asp-route-id="@Model.Id">
     <button class="btn" style="background-color: #FF7043; color: white;" type="submit">Șterge categoria</button>
 </form>
 
 <br />
 
-<!-- Link pentru a vizualiza lista categoriilor -->
 <a class="btn" href="/Categories/Index/" style="background-color: #FFB74D; color: #FF7043;">Afisare lista categorii</a>
 
 <br />

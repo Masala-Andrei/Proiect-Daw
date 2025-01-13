@@ -26,7 +26,6 @@ namespace Proiect_DAW.Controllers
             _roleManager = roleManager;
         }
 
-        // GET: Users
         public IActionResult Index()
         {
             var users = from user in db.Users
@@ -38,7 +37,7 @@ namespace Proiect_DAW.Controllers
             return View();
         }
 
-        // GET: Show User Details and Roles
+        // Show User Details and Roles
         public async Task<IActionResult> Show(string id)
         {
             var user = db.Users.Find(id);
@@ -58,7 +57,7 @@ namespace Proiect_DAW.Controllers
             return View(user);
         }
 
-        // POST: Manage User Roles (on the same page)
+        // POST: Manage User Roles
         [HttpPost]
         public async Task<IActionResult> ManageUserRole(string userId, string selectedRole)
         {
@@ -71,13 +70,10 @@ namespace Proiect_DAW.Controllers
                 return RedirectToAction("Index");
             }
 
-            // Get the current roles of the user
             var currentRoles = await _userManager.GetRolesAsync(user);
 
-            // Remove all current roles
             await _userManager.RemoveFromRolesAsync(user, currentRoles);
 
-            // Add the selected role to the user
             if (!string.IsNullOrEmpty(selectedRole))
             {
                 await _userManager.AddToRoleAsync(user, selectedRole);
@@ -90,7 +86,6 @@ namespace Proiect_DAW.Controllers
                 TempData["messageType"] = "alert-danger";
             }
 
-            // Re-fetch the user and roles after the update
             var roles = await _userManager.GetRolesAsync(user);
             ViewBag.Roles = roles;
             ViewBag.AllRoles = _roleManager.Roles.Select(r => r.Name).ToList();

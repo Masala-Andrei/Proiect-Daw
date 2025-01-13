@@ -1,23 +1,20 @@
 ﻿@model List<Proiect_DAW.Models.ProductOrder>
 
 <style>
-    /* General Container Styling */
     .container {
-        background-color: #f9f1fc; /* Light purple background */
+        background-color: #f9f1fc; 
         border-radius: 10px;
         padding: 30px;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     }
 
-    /* Title Styling */
     h2 {
-        color: #8e44ad; /* Darker purple for the title */
+        color: #8e44ad; 
         font-family: 'Arial', sans-serif;
         text-align: center;
         margin-bottom: 20px;
     }
 
-    /* Table Styling */
     table {
         width: 100%;
         border-collapse: collapse;
@@ -29,23 +26,20 @@
         text-align: center;
     }
 
-    /* Table Header Styling */
     thead {
-        background-color: #9b59b6; /* Lighter purple for the header */
+        background-color: #9b59b6; 
         color: white;
         font-weight: bold;
     }
 
-    /* Table Row Styling */
     tbody tr:nth-child(even) {
-        background-color: #f1e6f4; /* Light lavender for even rows */
+        background-color: #f1e6f4; 
     }
 
     tbody tr:nth-child(odd) {
-        background-color: #ffffff; /* White for odd rows */
+        background-color: #ffffff; 
     }
 
-    /* Button Styling */
     .btn {
         padding: 10px 20px;
         border-radius: 5px;
@@ -56,24 +50,23 @@
     }
 
     .btn-danger {
-        background-color: #e74c3c; /* Red for the delete button */
+        background-color: #e74c3c; 
         color: white;
     }
 
     .btn-danger:hover {
-        background-color: #c0392b; /* Darker red on hover */
+        background-color: #c0392b; 
     }
 
     .btn-success {
-        background-color: #8e44ad; /* Dark purple for the order button */
+        background-color: #8e44ad; 
         color: white;
     }
 
     .btn-success:hover {
-        background-color: #7d3c8c; /* Darker purple on hover */
+        background-color: #7d3c8c; 
     }
 
-    /* Empty Cart Message */
     p {
         font-size: 18px;
         text-align: center;
@@ -105,7 +98,6 @@
                         <td>@(item.Product.Price * item.Quantity) RON</td>
                         <td>
                             <form method="post" asp-action="RemoveFromCart">
-                                <!-- Hidden input for cartItemId and orderId -->
                                 <input type="hidden" name="cartItemId" value="@item.Id" />
                                 <input type="hidden" name="orderId" value="@item.OrderId" />
                                 <button class="btn btn-danger" type="submit">Șterge</button>

@@ -44,12 +44,10 @@ public class OrdersController : Controller
             return RedirectToAction("Show", "Products", new { id = productId });
         }
 
-        // Check if the user already has an active "Pending" order
         var existingOrder = db.Orders.FirstOrDefault(o => o.UserId == userId && o.Status == "Pending");
 
         if (existingOrder == null)
         {
-            // Create a new order if there is no existing "Pending" order
             existingOrder = new Order
             {
                 UserId = userId,
@@ -60,28 +58,19 @@ public class OrdersController : Controller
             db.SaveChanges();
         }
 
-        // Check if the product is already in the cart
+        // Vad daca exista prod in cos
         var existingCartItem = db.ProductOrders.FirstOrDefault(po => po.ProductId == productId && po.OrderId == existingOrder.Id);
 
         if (existingCartItem != null)
         {
-            // If the product exists, update its quantity
+            // Daca exista updatez cantitatea
             existingCartItem.Quantity += quantity;
 
-            // Ensure the new quantity does not exceed stock
-            //if (existingCartItem.Quantity > product.Stock)
-            //{
-            //    TempData["message"] = "Cantitatea solicitată depășește stocul disponibil.";
-            //    TempData["messageType"] = "alert-danger";
-            //    return RedirectToAction("Show", "Products", new { id = productId });
-            //}
-
-            // Update price based on new quantity
+           
             existingCartItem.Price = existingCartItem.Quantity * product.Price;
         }
         else
         {
-            // If the product doesn't exist in the cart, add it as a new item
             var cartItem = new ProductOrder
             {
                 ProductId = productId,
@@ -93,12 +82,10 @@ public class OrdersController : Controller
             db.ProductOrders.Add(cartItem);
         }
 
-        // Decrease stock in the database
         product.Stock -= quantity;
 
         db.SaveChanges();
 
-        // Provide a success message to the user
         TempData["message"] = "Produsul a fost adăugat în coș.";
         TempData["messageType"] = "alert-success";
 
@@ -121,11 +108,9 @@ public class OrdersController : Controller
 
             if (product != null)
             {
-                // Increase stock because the product is removed from the cart
                 product.Stock += cartItem.Quantity;
             }
 
-            // Remove the cart item
             db.ProductOrders.Remove(cartItem);
             db.SaveChanges();
 
@@ -143,9 +128,8 @@ public class OrdersController : Controller
 
 
 
-    // Plasează comanda
     [HttpPost]
-    [HttpPost]
+
     public IActionResult PlaceOrder()
     {
         var userId = _userManager.GetUserId(User);
@@ -184,11 +168,9 @@ public class OrdersController : Controller
             db.ProductOrders.Remove(cartItem);
         }
 
-        // Update the status of the existing order to "Plasata"
         existingOrder.Status = "Plasata";
         db.SaveChanges();
 
-        // Provide success message
         TempData["message"] = "Comanda a fost plasată cu succes.";
         TempData["messageType"] = "alert-success";
 

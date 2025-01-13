@@ -29,7 +29,6 @@ namespace Proiect_DAW.Controllers
         }
 
         [Authorize(Roles = "Colaborator,Admin")]
-        [Authorize(Roles = "Colaborator,Admin")]
         public IActionResult New()
         {
             Product product = new Product();
@@ -43,14 +42,13 @@ namespace Proiect_DAW.Controllers
         {
             product.UserId = _userManager.GetUserId(User);
 
-            // Products added by collaborators need validation
             if (User.IsInRole("Colaborator"))
             {
-                product.Validated = false; // Mark product as not validated
+                product.Validated = false; 
             }
             else if (User.IsInRole("Admin"))
             {
-                product.Validated = true; // Admin-added products are automatically validated
+                product.Validated = true; 
             }
 
             if (ModelState.IsValid)
@@ -91,30 +89,26 @@ namespace Proiect_DAW.Controllers
                                       .Include("UserRatings")
                                       .Where(p => p.Validated);
 
-            // Calculate average ratings (after fetching the products)
             foreach (var product in products)
             {
                 double averageRating = product.UserRatings != null && product.UserRatings.Count > 0
                     ? product.UserRatings
-                        .Where(ur => ur.Number >= 1 && ur.Number <= 5) // Filter only valid ratings
-                        .Average(ur => ur.Number) ?? 0.0 // Default to 0 if no valid ratings
+                        .Where(ur => ur.Number >= 1 && ur.Number <= 5) 
+                        .Average(ur => ur.Number) ?? 0.0 // Daca nu are rating pun 0
                     : 0.0;
 
                 product.Rating = averageRating;
             }
             var productsWithRatings = products.ToList();
 
-            // Search logic (remains unchanged)
             var search = "";
             if (!string.IsNullOrEmpty(Convert.ToString(HttpContext.Request.Query["search"])))
             {
-                search = Convert.ToString(HttpContext.Request.Query["search"]).Trim(); // Remove leading/trailing spaces
+                search = Convert.ToString(HttpContext.Request.Query["search"]).Trim(); 
 
-                // Filter products by Title only
                 productsWithRatings = productsWithRatings.Where(p => p.Title.Contains(search, StringComparison.OrdinalIgnoreCase)).ToList();
             }
 
-            // Sorting logic (works in memory)
             var sortField = Convert.ToString(HttpContext.Request.Query["sortField"]);
             var sortOrder = Convert.ToString(HttpContext.Request.Query["sortOrder"]);
 
@@ -136,18 +130,15 @@ namespace Proiect_DAW.Controllers
                 }
             }
 
-            // Stock status logic
             var productStockStatuses = productsWithRatings.Select(p => new
             {
                 ProductId = p.Id,
                 StockStatus = p.Stock > 0 ? "In stoc" : "Indisponibil"
             }).ToDictionary(p => p.ProductId, p => p.StockStatus);
 
-            // Passing the data to View
             ViewBag.ProductStockStatuses = productStockStatuses;
             ViewBag.Products = productsWithRatings;
 
-            // Show TempData message if exists
             if (TempData.ContainsKey("message"))
             {
                 ViewBag.Message = TempData["message"];
@@ -195,7 +186,7 @@ namespace Proiect_DAW.Controllers
 
             double averageRating = product.UserRatings != null && product.UserRatings.Count > 0
             ? product.UserRatings
-            .Where(ur => ur.Number >= 1 && ur.Number <= 5) // Filtrează doar ratingurile valide
+            .Where(ur => ur.Number >= 1 && ur.Number <= 5) 
             .Average(ur => ur.Number) ?? 0.0 // Media ratingurilor valide sau 0.0
             : 0.0;
 
@@ -256,7 +247,6 @@ namespace Proiect_DAW.Controllers
 
         public IActionResult Edit(int id, Product requestProduct)
         {
-            // Find the product by id
             Product product = db.Products.Find(id);
 
             if (product == null)
@@ -270,14 +260,12 @@ namespace Proiect_DAW.Controllers
             {
                 if ((product.UserId == _userManager.GetUserId(User)) || User.IsInRole("Admin"))
                 {
-                    // Update the product properties
                     product.Title = requestProduct.Title;
                     product.Description = requestProduct.Description;
                     product.CategoryId = requestProduct.CategoryId;
                     product.Price = requestProduct.Price;
                     product.Stock = requestProduct.Stock;
 
-                    // Admins validate the product automatically
                     if (User.IsInRole("Admin"))
                     {
                         product.Validated = true;
@@ -287,7 +275,6 @@ namespace Proiect_DAW.Controllers
                         product.Validated = false;
                     }
 
-                    // Save changes to the database
                     db.SaveChanges();
 
                     if (User.IsInRole("Colaborator"))
@@ -296,7 +283,6 @@ namespace Proiect_DAW.Controllers
                         return RedirectToAction("AwaitValidationPage");
                     }
 
-                    // Success message
                     TempData["message"] = "Produsul a fost editat cu succes.";
                     TempData["messageType"] = "alert-success";
                     return RedirectToAction("Index");
@@ -310,14 +296,12 @@ namespace Proiect_DAW.Controllers
             }
             else
             {
-                // If model validation fails, return to the view with the requestProduct model
-                requestProduct.Categ = GetAllCategories(); // Ensure this is populated correctly
+                requestProduct.Categ = GetAllCategories(); 
                 return View(requestProduct);
             }
         }
 
 
-        // Metoda pentru a adăuga produsul în coș
         [HttpPost]
         [Authorize(Roles = "RegisteredUser,Editor,Admin")]
         public IActionResult AddToCart(int productId, int quantity)
@@ -331,42 +315,37 @@ namespace Proiect_DAW.Controllers
                 return RedirectToAction("Show", new { id = productId });
             }
 
-            // Dacă produsul există și cantitatea este validă, adăugăm în coș
             var userId = _userManager.GetUserId(User);
 
             var order = db.Orders.FirstOrDefault(c => c.Status != "Plasata" && c.UserId == userId);
 
             if (order == null)
             {
-                // Create a new order if it doesn't exist
                 order = new Order
                 {
                     UserId = userId,
                     Status = "Neplasata",
                     Date = DateTime.Now
                 };
-                db.Orders.Add(order);  // Add the new order to the context
-                db.SaveChanges();  // Save the order first, so that it gets an ID
+                db.Orders.Add(order); 
+                db.SaveChanges();  
             }
 
-            // At this point, the order is guaranteed to have an ID
             var cartItem = db.ProductOrders.FirstOrDefault(c => c.ProductId == productId && c.Order.Status != "Plasata" && c.Order.UserId == userId);
 
             if (cartItem != null)
             {
-                // If the product is already in the cart, update the quantity
                 cartItem.Quantity += quantity;
-                cartItem.Price = cartItem.Quantity * cartItem.Product.Price;  // Update the price based on the new quantity
+                cartItem.Price = cartItem.Quantity * cartItem.Product.Price;  
             }
             else
             {
-                // If the product is not in the cart, add it
                 db.ProductOrders.Add(new ProductOrder
                 {
                     ProductId = productId,
                     Price = quantity * product.Price,
                     Quantity = quantity,
-                    OrderId = order.Id  // Assign the OrderId after saving the Order
+                    OrderId = order.Id  
                 });
             }
 
@@ -377,7 +356,7 @@ namespace Proiect_DAW.Controllers
             TempData["message"] = "Produsul a fost adăugat în coș!";
             TempData["messageType"] = "alert-success";
 
-            return RedirectToAction("Index"); // Poți modifica ruta pentru a duce către coșul de cumpărături
+            return RedirectToAction("Index"); 
         }
 
 
@@ -385,7 +364,6 @@ namespace Proiect_DAW.Controllers
         [Authorize(Roles = "RegisteredUser,Colaborator,Admin")]
         public IActionResult Show([FromForm] Review review)
         {
-            // Setăm data și utilizatorul curent
             review.Date = DateTime.Now;
             var userId = _userManager.GetUserId(User);
 
@@ -398,7 +376,6 @@ namespace Proiect_DAW.Controllers
                 review.UserId = userId;
             }
 
-            // Verificăm validitatea modelului
             if (ModelState.IsValid)
             {
                 try
@@ -466,7 +443,7 @@ namespace Proiect_DAW.Controllers
         }
 
         [HttpGet]
-        [Authorize] // Doar utilizatorii autentificați pot adăuga rating-uri
+        [Authorize] 
         public IActionResult AddRating(int productId)
         {
             var product = db.Products.FirstOrDefault(p => p.Id == productId && p.Validated);
@@ -497,13 +474,11 @@ namespace Proiect_DAW.Controllers
 
                 if (existingRating != null)
                 {
-                    // Actualizează rating-ul existent
                     existingRating.Number = userRating.Number;
                     TempData["message"] = "Rating-ul a fost actualizat.";
                 }
                 else
                 {
-                    // Adaugă un rating nou
                     userRating.UserId = _userManager.GetUserId(User);
                     db.UserRatings.Add(userRating);
                     TempData["message"] = "Rating-ul a fost adăugat.";
@@ -559,18 +534,14 @@ namespace Proiect_DAW.Controllers
         [NonAction]
         public IEnumerable<SelectListItem> GetAllCategories()
         {
-            // generam o lista de tipul SelectListItem fara elemente
             var selectList = new List<SelectListItem>();
 
-            // extragem toate categoriile din baza de date
             var categories = from cat in db.Categories
                              select cat;
 
-            // iteram prin categorii
             foreach (var category in categories)
             {
-                // adaugam in lista elementele necesare pentru dropdown
-                // id-ul categoriei si denumirea acesteia
+                
                 selectList.Add(new SelectListItem
                 {
                     Value = category.Id.ToString(),

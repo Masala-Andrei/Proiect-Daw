@@ -23,9 +23,8 @@
             <p><strong>Stoc disponibil:</strong> @ViewBag.RemainingStock</p>
         </div>
 
-        <!-- Add to Cart Form -->
+        <!-- Formular pentru Adaugare in Cos -->
         <div class="card-footer d-flex justify-content-between align-items-center" style="background-color: #FFE0B2;">
-            <!-- Formular pentru Adăugare în Coș -->
             <form method="post" asp-action="AddToCart" asp-controller="Orders" class="d-inline-block">
                 <input type="hidden" name="productId" value="@Model.Id" />
                 <div class="form-group d-inline-block me-2">
@@ -35,7 +34,7 @@
                 <button class="btn btn-success btn-sm" type="submit">Adaugă în Coș</button>
             </form>
 
-            <!-- Butoane pentru Editează și Șterge Produs -->
+            <!-- Butoane pentru Editeaza si Sterge Produs -->
             @if ((ViewBag.AfisareButoane == true && Model.UserId == ViewBag.UserCurent) || ViewBag.EsteAdmin == true)
             {
                 <div class="d-flex gap-1">
