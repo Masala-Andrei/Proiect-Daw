@@ -16,8 +16,6 @@ public class OrdersController : Controller
         _userManager = userManager;
     }
 
-    [Authorize(Roles = "User,Editor,Admin")]
-
     // Afișează coșul curent
     public IActionResult Index()
     {
@@ -27,12 +25,17 @@ public class OrdersController : Controller
 
     // Adaugă produs în coș
     [HttpPost]
-    [Authorize(Roles = "User, Editor, Admin")]
     public IActionResult AddToCart(int productId, int quantity)
     {
         var userId = _userManager.GetUserId(User);
-        var product = db.Products.Find(productId);
+        if (userId == null)
+        {
+            TempData["message"] = "Trebuie să fiți autentificat pentru a adăuga produse în coș.";
+            TempData["messageType"] = "alert-danger";
+            return RedirectToAction("Index", "Products");
+        }
 
+        var product = db.Products.Find(productId);
 
         if (product == null || quantity <= 0 || quantity > product.Stock)
         {
@@ -42,7 +45,7 @@ public class OrdersController : Controller
         }
 
         // Check if the user already has an active "Pending" order
-        var existingOrder = _db.Orders.FirstOrDefault(o => o.UserId == userId && o.Status == "Pending");
+        var existingOrder = db.Orders.FirstOrDefault(o => o.UserId == userId && o.Status == "Pending");
 
         if (existingOrder == null)
         {
@@ -53,12 +56,12 @@ public class OrdersController : Controller
                 Date = DateTime.Now,
                 Status = "Pending"
             };
-            _db.Orders.Add(existingOrder);
-            _db.SaveChanges();
+            db.Orders.Add(existingOrder);
+            db.SaveChanges();
         }
 
         // Check if the product is already in the cart
-        var existingCartItem = _db.ProductOrders.FirstOrDefault(po => po.ProductId == productId && po.OrderId == existingOrder.Id);
+        var existingCartItem = db.ProductOrders.FirstOrDefault(po => po.ProductId == productId && po.OrderId == existingOrder.Id);
 
         if (existingCartItem != null)
         {
@@ -66,12 +69,12 @@ public class OrdersController : Controller
             existingCartItem.Quantity += quantity;
 
             // Ensure the new quantity does not exceed stock
-            if (existingCartItem.Quantity > product.Stock)
-            {
-                TempData["message"] = "Cantitatea solicitată depășește stocul disponibil.";
-                TempData["messageType"] = "alert-danger";
-                return RedirectToAction("Show", "Products", new { id = productId });
-            }
+            //if (existingCartItem.Quantity > product.Stock)
+            //{
+            //    TempData["message"] = "Cantitatea solicitată depășește stocul disponibil.";
+            //    TempData["messageType"] = "alert-danger";
+            //    return RedirectToAction("Show", "Products", new { id = productId });
+            //}
 
             // Update price based on new quantity
             existingCartItem.Price = existingCartItem.Quantity * product.Price;
@@ -87,14 +90,13 @@ public class OrdersController : Controller
                 OrderId = existingOrder.Id
             };
 
-            _db.ProductOrders.Add(cartItem);
+            db.ProductOrders.Add(cartItem);
         }
 
         // Decrease stock in the database
         product.Stock -= quantity;
 
-
-        _db.SaveChanges();
+        db.SaveChanges();
 
         // Provide a success message to the user
         TempData["message"] = "Produsul a fost adăugat în coș.";
@@ -111,11 +113,11 @@ public class OrdersController : Controller
     [HttpPost]
     public IActionResult RemoveFromCart(int cartItemId)
     {
-        var cartItem = _db.ProductOrders.FirstOrDefault(po => po.Id == cartItemId);
+        var cartItem = db.ProductOrders.FirstOrDefault(po => po.Id == cartItemId);
 
         if (cartItem != null)
         {
-            var product = _db.Products.Find(cartItem.ProductId);
+            var product = db.Products.Find(cartItem.ProductId);
 
             if (product != null)
             {
@@ -124,34 +126,30 @@ public class OrdersController : Controller
             }
 
             // Remove the cart item
-            _db.ProductOrders.Remove(cartItem);
-            _db.SaveChanges();
-
+            db.ProductOrders.Remove(cartItem);
+            db.SaveChanges();
 
             TempData["message"] = "Produsul a fost eliminat din coș.";
             TempData["messageType"] = "alert-warning";
         }
         else
         {
-
-
             TempData["message"] = "Produsul nu a fost găsit în coș.";
             TempData["messageType"] = "alert-danger";
         }
 
-        // Redirecționăm utilizatorul către pagina principală a coșului
         return RedirectToAction("Index");
     }
 
 
 
-
     // Plasează comanda
+    [HttpPost]
     [HttpPost]
     public IActionResult PlaceOrder()
     {
         var userId = _userManager.GetUserId(User);
-        var existingOrder = _db.Orders.FirstOrDefault(o => o.UserId == userId && o.Status == "Pending");
+        var existingOrder = db.Orders.FirstOrDefault(o => o.UserId == userId && o.Status == "Pending");
 
         if (existingOrder == null)
         {
@@ -159,9 +157,8 @@ public class OrdersController : Controller
             TempData["messageType"] = "alert-danger";
             return RedirectToAction("Index");
         }
-        var order = db.Orders.FirstOrDefault(c => c.Status != "Plasata" && c.UserId == userId);
 
-        var cartItems = _db.ProductOrders.Where(ci => ci.OrderId == existingOrder.Id).ToList();
+        var cartItems = db.ProductOrders.Where(ci => ci.OrderId == existingOrder.Id).ToList();
 
         if (!cartItems.Any())
         {
@@ -178,19 +175,18 @@ public class OrdersController : Controller
             Status = "Plasata"
         };
 
-        _db.Orders.Add(order);
-        _db.SaveChanges();
-
+        db.Orders.Add(order);
+        db.SaveChanges();
 
         // Remove cart items from the database
         foreach (var cartItem in cartItems)
         {
-            _db.ProductOrders.Remove(cartItem);
+            db.ProductOrders.Remove(cartItem);
         }
 
         // Update the status of the existing order to "Plasata"
         existingOrder.Status = "Plasata";
-        _db.SaveChanges();
+        db.SaveChanges();
 
         // Provide success message
         TempData["message"] = "Comanda a fost plasată cu succes.";
